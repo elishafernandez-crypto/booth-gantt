@@ -1,0 +1,2364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Fridays × Booth — Action Plan</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --forest:#1D4B3B; --lake:#5B8B92; --mint:#BEDED3;
+  --mauve:#C09ACD; --lilac:#EDD9ED; --violet:#8B6185;
+  --rain:#D8E5F4; --blue:#256CB2;
+  --leather:#282526; --stone:#707070; --silver:#A4A4A4;
+  --timberwolf:#C7C5C4; --tangrey:#ECE9E5; --smoke:#FAF8F6; --white:#FFFFFF;
+  --bg:var(--smoke); --surface:var(--white); --border:var(--timberwolf);
+  --text:var(--leather); --muted:var(--stone);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+h1,h2,.tab,.cat-label-inner,.badge,.pill-btn,.section-title,.form-label,.modal h3,.add-task-btn,.log-add-btn,.btn-cancel,.btn-save{font-family:'Poppins',sans-serif;}
+
+/* Header */
+header{background:var(--forest);color:var(--white);padding:18px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;position:sticky;top:0;z-index:200;box-shadow:0 2px 12px rgba(29,75,59,.2);flex-shrink:0;}
+.logo h1{font-size:1.15rem;font-weight:700;color:var(--white);}
+.logo p{font-family:'Inter',sans-serif;font-size:.7rem;color:var(--mint);margin-top:2px;}
+.header-controls{display:flex;gap:8px;flex-wrap:wrap;}
+.pill-btn{font-size:.71rem;font-weight:600;padding:5px 15px;border-radius:100px;border:1.5px solid rgba(255,255,255,.35);background:transparent;color:rgba(255,255,255,.75);cursor:pointer;transition:all .15s;}
+.pill-btn:hover,.pill-btn.active{background:var(--mint);border-color:var(--mint);color:var(--forest);}
+.pill-btn.light{border-color:var(--timberwolf);color:var(--stone);}
+.pill-btn.light:hover,.pill-btn.light.active{background:var(--mint);border-color:var(--lake);color:var(--forest);}
+
+/* Save banner */
+.save-banner{display:none;background:var(--lake);color:#fff;text-align:center;padding:7px;font-size:.76rem;}
+.save-banner.show{display:block;}
+
+/* Tabs */
+.tabs{display:flex;background:var(--white);border-bottom:2px solid var(--border);padding:0 32px;flex-shrink:0;}
+.tab{font-size:.78rem;font-weight:600;padding:13px 20px;cursor:pointer;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .15s;}
+.tab.active{color:var(--forest);border-bottom-color:var(--forest);}
+
+/* Views */
+.view{display:none;}.view.active{display:flex;flex-direction:column;flex:1;min-height:0;overflow-y:auto;overflow-x:auto;}
+
+/* Gantt */
+.gantt-wrap{padding:22px 32px 0 32px;display:flex;flex-direction:column;flex:1;min-height:0;overflow:visible;}
+#ganttScrollOuter{overflow-x:auto;overflow-y:visible;flex:1;min-height:0;padding-bottom:12px;}
+#ganttScrollOuter::-webkit-scrollbar{height:8px;}
+#ganttScrollOuter::-webkit-scrollbar-track{background:var(--smoke);border-radius:100px;}
+#ganttScrollOuter::-webkit-scrollbar-thumb{background:var(--timberwolf);border-radius:100px;}
+#ganttScrollOuter::-webkit-scrollbar-thumb:hover{background:var(--lake);}
+#ganttScrollTop::-webkit-scrollbar{height:6px;}
+#ganttScrollTop::-webkit-scrollbar-track{background:var(--smoke);}
+#ganttScrollTop::-webkit-scrollbar-thumb{background:var(--timberwolf);border-radius:100px;}
+#ganttScrollTop::-webkit-scrollbar-thumb:hover{background:var(--lake);}
+.gantt-legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px;padding-bottom:14px;border-bottom:1.5px solid var(--border);align-items:center;}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:.71rem;color:var(--muted);font-weight:500;font-family:'Poppins',sans-serif;}
+.legend-dot{width:11px;height:11px;border-radius:3px;flex-shrink:0;}
+.hint-bar{font-size:.68rem;color:var(--muted);margin-bottom:14px;background:var(--tangrey);border-radius:6px;padding:7px 12px;border-left:3px solid var(--lake);}
+.add-task-btn{margin-left:auto;background:var(--forest);color:#fff;border:none;border-radius:8px;padding:7px 16px;font-size:.72rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;transition:background .15s;}
+.add-task-btn:hover{background:var(--lake);}
+
+.gantt-table{min-width:1060px;width:100%;border-collapse:collapse;}.cat-header-row td{padding:16px 0 5px;font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
+.cat-label-inner{display:flex;align-items:center;gap:8px;}
+.cat-stripe{width:20px;height:3px;border-radius:2px;display:inline-block;}
+
+.task-row{border-bottom:1px solid rgba(0,0,0,.05);transition:background .1s;}
+.task-row:hover{background:rgba(29,75,59,.04);}
+.task-info{width:300px;min-width:260px;padding:8px 10px 8px 2px;vertical-align:middle;}
+.task-name-wrap{display:flex;align-items:flex-start;gap:5px;}
+.task-name{font-size:.78rem;font-weight:600;color:var(--text);line-height:1.35;font-family:'Poppins',sans-serif;cursor:pointer;border-bottom:1.5px dashed transparent;transition:border-color .15s;flex:1;}
+.task-name:hover{border-bottom-color:var(--forest);}
+.task-meta{font-size:.64rem;color:var(--muted);margin-top:4px;display:flex;gap:5px;flex-wrap:wrap;align-items:center;}
+.owner-tag{background:var(--tangrey);border-radius:4px;padding:1px 6px;font-weight:500;cursor:pointer;transition:background .12s;font-size:.6rem;font-family:'Inter',sans-serif;}
+.owner-tag:hover{background:var(--mint);color:var(--forest);}
+.del-btn{background:none;border:none;cursor:pointer;color:var(--timberwolf);font-size:.9rem;padding:0 2px;line-height:1;flex-shrink:0;margin-top:1px;transition:color .15s;}
+.del-btn:hover{color:#c0392b;}
+.status-col{width:28px;padding:0 5px;vertical-align:middle;text-align:center;font-size:.95rem;cursor:pointer;user-select:none;}
+.status-col:hover{opacity:.7;}
+.due-col{width:78px;padding:0 7px;font-size:.67rem;color:var(--muted);vertical-align:middle;white-space:nowrap;cursor:pointer;}
+.due-col:hover{color:var(--forest);text-decoration:underline;}
+.due-col.overdue{color:#c0392b;font-weight:700;}
+.due-col.soon{color:#d35400;font-weight:600;}
+.timeline-header{font-size:.59rem;color:var(--muted);padding:5px 2px;text-align:center;white-space:nowrap;border-bottom:1.5px solid var(--border);font-family:'Inter',sans-serif;}
+.bar-cell{padding:0 3px;vertical-align:middle;}
+.today-line{position:absolute;top:0;bottom:0;width:2px;background:#c0392b;z-index:10;pointer-events:none;}
+.today-label{position:absolute;top:4px;left:50%;transform:translateX(-50%);font-size:.52rem;color:#c0392b;white-space:nowrap;font-family:'Poppins',sans-serif;font-weight:700;letter-spacing:.06em;background:#fff;padding:0 3px;border-radius:2px;}
+
+/* Inline editors */
+.inline-input{font-family:'Poppins',sans-serif;font-size:.78rem;font-weight:600;border:1.5px solid var(--lake);border-radius:5px;padding:2px 7px;outline:none;color:var(--text);background:#fff;width:100%;}
+.inline-input:focus{border-color:var(--forest);box-shadow:0 0 0 2px rgba(29,75,59,.1);}
+.owner-input{font-family:'Inter',sans-serif;font-size:.64rem;font-weight:500;border:1.5px solid var(--lake);border-radius:4px;padding:1px 5px;outline:none;width:78px;color:var(--forest);background:var(--mint);}
+.date-input{font-family:'Inter',sans-serif;font-size:.65rem;border:1.5px solid var(--lake);border-radius:4px;padding:2px 4px;outline:none;width:80px;color:var(--text);}
+
+/* Status picker */
+.status-picker{position:fixed;background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:8px;box-shadow:0 8px 24px rgba(0,0,0,.13);z-index:9999;display:flex;gap:8px;}
+.sp-opt{font-size:1.2rem;cursor:pointer;padding:4px 8px;border-radius:6px;transition:background .12s;}
+.sp-opt:hover{background:var(--tangrey);}
+
+/* Tooltip */
+.tooltip{position:fixed;background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:14px 18px;font-size:.77rem;pointer-events:none;z-index:9999;max-width:320px;box-shadow:0 8px 28px rgba(0,0,0,.14);display:none;}
+.tooltip-title{font-family:'Poppins',sans-serif;font-weight:700;font-size:.84rem;margin-bottom:9px;color:var(--forest);}
+.tooltip-row{display:flex;gap:8px;margin-bottom:4px;align-items:flex-start;}
+.tooltip-label{font-family:'Poppins',sans-serif;font-size:.6rem;color:var(--muted);min-width:68px;text-transform:uppercase;letter-spacing:.04em;font-weight:700;padding-top:1px;}
+.tooltip-val{font-size:.74rem;color:var(--text);line-height:1.4;font-family:'Inter',sans-serif;}
+
+/* Notes side panel */
+.notes-panel{position:fixed;top:0;right:-400px;width:380px;height:100vh;background:var(--white);border-left:2px solid var(--border);box-shadow:-8px 0 32px rgba(0,0,0,.1);z-index:400;display:flex;flex-direction:column;transition:right .28s cubic-bezier(.16,1,.3,1);}
+.notes-panel.open{right:0;}
+.notes-header{background:var(--forest);padding:18px 20px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-shrink:0;}
+.notes-header-title{font-family:'Poppins',sans-serif;font-size:.82rem;font-weight:700;color:#fff;line-height:1.35;flex:1;}
+.notes-header-cat{font-size:.62rem;color:var(--mint);font-family:'Inter',sans-serif;margin-top:3px;}
+.notes-close{background:rgba(255,255,255,.15);border:none;color:#fff;font-size:1.1rem;width:28px;height:28px;border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .12s;}
+.notes-close:hover{background:rgba(255,255,255,.3);}
+.notes-meta{padding:14px 20px;border-bottom:1px solid var(--tangrey);display:flex;gap:10px;flex-wrap:wrap;flex-shrink:0;}
+.notes-meta-item{display:flex;flex-direction:column;gap:2px;}
+.notes-meta-label{font-family:'Poppins',sans-serif;font-size:.56rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);}
+.notes-meta-val{font-size:.72rem;font-family:'Inter',sans-serif;color:var(--text);}
+.notes-body{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:16px;}
+.notes-section-title{font-family:'Poppins',sans-serif;font-size:.64rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:6px;}
+.notes-dod{background:var(--tangrey);border-radius:8px;padding:10px 12px;font-size:.76rem;color:var(--text);line-height:1.5;font-family:'Inter',sans-serif;}
+.notes-dod:empty::before{content:'No definition of done set.';color:var(--muted);}
+.notes-dod-edit{width:100%;background:var(--tangrey);border:1.5px solid transparent;border-radius:8px;padding:10px 12px;font-size:.76rem;color:var(--text);line-height:1.5;font-family:'Inter',sans-serif;resize:vertical;min-height:70px;outline:none;transition:border-color .15s,background .15s;cursor:text;}
+.notes-dod-edit:focus{border-color:var(--lake);background:#fff;}
+.notes-dod-edit::placeholder{color:var(--muted);font-style:italic;}
+.notes-entries{display:flex;flex-direction:column;gap:10px;}
+.note-entry{background:var(--smoke);border:1px solid var(--tangrey);border-radius:10px;padding:11px 13px;position:relative;}
+.note-entry-type{display:inline-block;font-family:'Poppins',sans-serif;font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:2px 8px;border-radius:100px;margin-bottom:6px;}
+.note-type-note{background:#e8f0fb;color:#256CB2;}
+.note-type-blocker{background:#fde8e8;color:#c0392b;}
+.note-type-update{background:#e8f8f0;color:#1e8449;}
+.note-entry-text{font-size:.76rem;color:var(--text);line-height:1.5;font-family:'Inter',sans-serif;white-space:pre-wrap;}
+.note-entry-date{font-size:.6rem;color:var(--muted);font-family:'Inter',sans-serif;margin-top:5px;}
+.note-del{position:absolute;top:8px;right:8px;background:none;border:none;color:var(--timberwolf);cursor:pointer;font-size:.85rem;line-height:1;transition:color .12s;}
+.note-del:hover{color:#c0392b;}
+.notes-add-form{border-top:1px solid var(--tangrey);padding:14px 20px;flex-shrink:0;background:var(--smoke);}
+.notes-add-form select,.notes-add-form textarea{width:100%;font-family:'Inter',sans-serif;font-size:.78rem;border:1.5px solid var(--border);border-radius:8px;padding:7px 10px;outline:none;color:var(--text);background:#fff;transition:border-color .12s;margin-bottom:8px;resize:none;}
+.notes-add-form select:focus,.notes-add-form textarea:focus{border-color:var(--lake);}
+.notes-add-form textarea{min-height:72px;}
+.notes-submit{width:100%;font-family:'Poppins',sans-serif;font-size:.74rem;font-weight:700;padding:9px;border-radius:8px;border:none;background:var(--forest);color:#fff;cursor:pointer;transition:background .12s;}
+.notes-submit:hover{background:var(--lake);}
+.note-btn{background:none;border:none;cursor:pointer;font-size:.88rem;color:var(--lake);padding:0 4px;transition:color .12s;font-family:'Inter',sans-serif;line-height:1;white-space:nowrap;}
+.note-btn:hover{color:var(--forest);}
+.note-badge{display:inline-flex;align-items:center;justify-content:center;background:var(--lake);color:#fff;border-radius:100px;font-size:.52rem;font-weight:700;min-width:14px;height:14px;padding:0 4px;margin-left:3px;font-family:'Poppins',sans-serif;}
+.overlay-dim{display:none;position:fixed;inset:0;background:rgba(0,0,0,.18);z-index:399;}
+.overlay-dim.show{display:block;}
+
+/* Log */
+.log-wrap{padding:22px 32px;}
+.log-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;}
+.log-filters{display:flex;gap:7px;flex-wrap:wrap;}
+.log-add-btn{background:var(--forest);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:.72rem;font-weight:600;cursor:pointer;transition:background .15s;}
+.log-add-btn:hover{background:var(--lake);}
+.log-table-wrap{overflow-x:auto;border:1.5px solid var(--border);border-radius:12px;background:var(--white);}
+.log-table{width:100%;border-collapse:collapse;min-width:860px;}
+.log-table th{font-family:'Poppins',sans-serif;font-size:.62rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:11px 13px;text-align:left;border-bottom:1.5px solid var(--border);background:var(--smoke);white-space:nowrap;}
+.log-table td{padding:9px 13px;font-size:.77rem;border-bottom:1px solid rgba(0,0,0,.05);vertical-align:top;line-height:1.45;}
+.log-table tr:last-child td{border-bottom:none;}
+.log-table tr:hover td{background:rgba(29,75,59,.025);}
+.ed{cursor:text;border-radius:4px;padding:1px 4px;display:inline-block;min-width:50px;transition:background .12s;}
+.ed:hover{background:var(--tangrey);}
+.ed:focus{outline:1.5px solid var(--forest);background:#fff;border-radius:4px;}
+.badge{display:inline-block;font-family:'Poppins',sans-serif;font-size:.6rem;font-weight:600;padding:3px 10px;border-radius:100px;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;}
+.badge:hover{opacity:.8;}
+.bh{background:#fde8e8;color:#c0392b;border:1.5px solid #f5b7b1;}
+.bm{background:#fef3e2;color:#d35400;border:1.5px solid #f9cf9a;}
+.bl{background:#e8f8f0;color:#1e8449;border:1.5px solid #a9dfbf;}
+.bip{background:#e8f0fb;color:#256CB2;border:1.5px solid #aec6ef;}
+.bco{background:#e8f8f0;color:#1e8449;border:1.5px solid #a9dfbf;}
+.bns{background:var(--tangrey);color:var(--muted);border:1.5px solid var(--timberwolf);}
+.bir{background:#f3e8fb;color:#8B6185;border:1.5px solid #d7b8e8;}
+.rdel{background:none;border:none;cursor:pointer;color:var(--timberwolf);font-size:1rem;padding:0;transition:color .12s;}
+.rdel:hover{color:#c0392b;}
+
+/* Summary */
+.summary-wrap{padding:22px 32px;}
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:13px;margin-bottom:28px;}
+.card{background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:18px;border-top:4px solid var(--forest);}
+.card-value{font-size:2.2rem;font-weight:800;line-height:1;margin-bottom:5px;font-family:'Poppins',sans-serif;}
+.card-label{font-size:.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600;font-family:'Poppins',sans-serif;}
+.section-title{font-size:.73rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:13px;}
+.ws-row{display:flex;align-items:center;gap:13px;margin-bottom:11px;}
+.ws-name{font-size:.78rem;font-weight:600;width:200px;flex-shrink:0;font-family:'Poppins',sans-serif;}
+.ws-track{flex:1;height:8px;background:var(--tangrey);border-radius:100px;overflow:hidden;}
+.ws-fill{height:100%;border-radius:100px;transition:width .8s cubic-bezier(.16,1,.3,1);}
+.ws-pct{font-size:.66rem;color:var(--muted);width:36px;text-align:right;font-weight:600;}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(29,75,59,.22);z-index:500;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--white);border-radius:16px;padding:26px 30px;width:460px;max-width:95vw;box-shadow:0 16px 48px rgba(0,0,0,.17);}
+.modal h3{font-size:1.05rem;font-weight:700;color:var(--forest);margin-bottom:18px;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-group.full{grid-column:1/-1;}
+.form-label{font-size:.66rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+.form-control{font-family:'Inter',sans-serif;font-size:.8rem;border:1.5px solid var(--border);border-radius:8px;padding:8px 10px;outline:none;color:var(--text);background:#fff;transition:border-color .15s;}
+.form-control:focus{border-color:var(--forest);box-shadow:0 0 0 3px rgba(29,75,59,.08);}
+.modal-actions{display:flex;gap:9px;justify-content:flex-end;margin-top:20px;}
+.btn-cancel{background:var(--tangrey);border:none;border-radius:8px;padding:8px 18px;font-size:.76rem;font-weight:600;cursor:pointer;color:var(--muted);}
+.btn-save{background:var(--forest);border:none;border-radius:8px;padding:8px 18px;font-size:.76rem;font-weight:700;cursor:pointer;color:#fff;}
+.btn-save:hover{background:var(--lake);}
+/* ── Class Projections ── */
+.proj-wrap{padding:22px 32px;display:flex;flex-direction:column;flex:1;min-height:0;}
+.proj-toolbar{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px;}
+.proj-legend-item{display:flex;align-items:center;gap:6px;font-size:.7rem;color:var(--muted);font-family:'Poppins',sans-serif;font-weight:500;}
+.proj-swatch{width:24px;height:14px;border-radius:4px;flex-shrink:0;display:inline-block;}
+.proj-table{border-collapse:separate;border-spacing:0;table-layout:fixed;background:var(--white);}
+.proj-table th{font-family:'Poppins',sans-serif;font-size:.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:8px 4px;text-align:center;background:var(--smoke);border-bottom:1.5px solid var(--border);white-space:nowrap;overflow:hidden;position:relative;user-select:none;}
+.proj-table td{border:1px solid var(--tangrey);padding:0;min-height:38px;vertical-align:middle;}
+.proj-table td.td-name{padding:4px 4px 4px 10px;font-family:'Poppins',sans-serif;font-size:.76rem;font-weight:600;color:var(--text);position:sticky;left:0;z-index:3;background:#fff;white-space:normal;word-break:break-word;height:auto;min-height:38px;vertical-align:middle;border-right:2px solid var(--border);}
+.proj-table th.th-name{position:sticky;left:0;z-index:5;background:var(--smoke);border-right:2px solid var(--border);}
+.proj-table td.td-site{padding:0 4px;font-family:'Inter',sans-serif;font-size:.72rem;color:var(--muted);text-align:center;}
+.proj-table td.td-del{width:30px;text-align:center;padding:0;}
+.proj-table tr.hold-row td.td-name,.proj-table tr.hold-row td.td-site{background:var(--white);}
+.proj-table td.phase-cell{cursor:pointer;text-align:center;font-family:'Poppins',sans-serif;font-size:.62rem;font-weight:700;color:#fff;letter-spacing:.03em;transition:opacity .12s;}
+.proj-table td.phase-cell:hover{opacity:.75;}
+.proj-table td.phase-cell.phase-empty{background:#f9f7f5;color:transparent;}
+.proj-table td.phase-cell.phase-pst{background:#34A853;}
+.proj-table td.phase-cell.phase-nesting{background:#FBBC04;color:#5a4000;}
+.proj-table td.phase-cell.phase-bau{background:#1a7340;}
+.name-edit{font-family:'Poppins',sans-serif;font-size:.68rem;font-weight:600;border:none;outline:none;background:transparent;color:var(--text);width:100%;cursor:text;padding:2px 2px;white-space:pre-wrap;word-break:break-word;}
+.name-edit:focus{background:#f0f9f5;border-radius:4px;}
+.site-edit{font-family:'Inter',sans-serif;font-size:.72rem;border:none;outline:none;background:transparent;color:var(--muted);width:100%;text-align:center;cursor:text;}
+.site-edit:focus{background:#f0f9f5;border-radius:4px;}
+.proj-date-label{cursor:pointer;padding:2px 3px;border-radius:3px;display:inline-block;font-size:.6rem;}
+.proj-date-label:hover{background:var(--mint);color:var(--forest);}
+.col-resize-handle{position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;background:transparent;z-index:2;}
+.undo-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--leather);color:#fff;border-radius:100px;padding:7px 18px;font-family:'Poppins',sans-serif;font-size:.72rem;font-weight:600;display:none;z-index:500;box-shadow:0 4px 16px rgba(0,0,0,.2);gap:12px;align-items:center;}
+.undo-bar.show{display:flex;}
+.undo-bar button{background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:6px;padding:3px 10px;font-family:'Poppins',sans-serif;font-size:.68rem;font-weight:600;cursor:pointer;transition:background .12s;}
+.undo-bar button:hover{background:rgba(255,255,255,.3);}
+.undo-bar button:disabled{opacity:.35;cursor:default;}
+/* ── FTE cell selection ── */
+.fte-cell.selected{background:#d0e8f5 !important;outline:1.5px solid #256CB2;}
+.fte-cell.selected input{background:transparent !important;}
+.fte-selecting{user-select:none;}
+.fte-wrap{padding:22px 32px;}
+.fte-toolbar{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px;}
+.fte-table{border-collapse:collapse;background:var(--white);border:1.5px solid var(--border);border-radius:10px;overflow:hidden;min-width:600px;}
+.fte-table th{font-family:'Poppins',sans-serif;font-size:.62rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:8px 10px;text-align:center;background:var(--smoke);border-bottom:1.5px solid var(--border);white-space:nowrap;position:relative;user-select:none;min-width:80px;}
+.fte-table th.row-header{text-align:left;padding-left:14px;min-width:180px;}
+.fte-table td{border:1px solid var(--tangrey);padding:0;height:36px;vertical-align:middle;min-width:80px;}
+.fte-table td.row-label{padding:0 4px 0 14px;font-family:'Poppins',sans-serif;font-size:.76rem;font-weight:600;color:var(--text);}
+.fte-table td.fte-cell{text-align:center;font-family:'Inter',sans-serif;font-size:.76rem;color:var(--text);}
+.fte-table td.total-cell{background:var(--tangrey);font-weight:700;font-family:'Poppins',sans-serif;font-size:.76rem;text-align:center;color:var(--forest);}
+.fte-table tr.total-row td{background:var(--mint);font-weight:700;font-family:'Poppins',sans-serif;}
+.fte-input{width:100%;height:100%;border:none;outline:none;background:transparent;text-align:center;font-family:'Inter',sans-serif;font-size:.76rem;color:var(--text);padding:0 4px;cursor:text;}
+.fte-input:focus{background:#f0f9f5;outline:2px solid var(--lake);border-radius:3px;}
+.fte-label-input{width:100%;height:100%;border:none;outline:none;background:transparent;font-family:'Poppins',sans-serif;font-size:.76rem;font-weight:600;color:var(--text);padding:0 4px 0 0;cursor:text;}
+.fte-label-input:focus{background:#f0f9f5;outline:2px solid var(--lake);border-radius:3px;}
+.fte-del{background:none;border:none;cursor:pointer;color:var(--timberwolf);font-size:.8rem;padding:2px 5px;transition:color .12s;}
+.fte-del:hover{color:#c0392b;}
+/* ── Smart Analytics ── */
+.analytics-wrap{padding:0;background:var(--smoke);min-height:calc(100vh - 120px);}
+.analytics-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:22px 32px 18px;background:var(--white);border-bottom:1.5px solid var(--border);}
+.analytics-hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;background:var(--border);border-bottom:1.5px solid var(--border);}
+.analytics-hero-stat{background:var(--white);padding:18px 24px;display:flex;flex-direction:column;gap:4px;}
+.analytics-hero-val{font-family:'Poppins',sans-serif;font-size:1.8rem;font-weight:800;line-height:1;color:var(--forest);}
+.analytics-hero-val.danger{color:#c0392b;}
+.analytics-hero-val.warn{color:#d35400;}
+.analytics-hero-val.good{color:#1e8449;}
+.analytics-hero-label{font-family:'Inter',sans-serif;font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600;}
+.analytics-hero-sub{font-family:'Inter',sans-serif;font-size:.62rem;color:var(--timberwolf);}
+.analytics-body{display:grid;grid-template-columns:300px 1fr;gap:0;min-height:500px;}
+.analytics-sidebar{background:var(--white);border-right:1.5px solid var(--border);padding:20px 0;}
+.analytics-sidebar-title{font-family:'Poppins',sans-serif;font-size:.62rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:0 20px 10px;}
+.priority-item{display:flex;align-items:flex-start;gap:10px;padding:10px 20px;border-left:3px solid transparent;cursor:pointer;transition:background .1s;}
+.priority-item:hover{background:var(--smoke);}
+.priority-item.active{background:#f0f9f5;border-left-color:var(--forest);}
+.priority-item.p-danger{border-left-color:#c0392b;}
+.priority-item.p-warn{border-left-color:#d35400;}
+.priority-item.p-good{border-left-color:#1e8449;}
+.priority-item.p-info{border-left-color:#256CB2;}
+.priority-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.priority-dot.danger{background:#c0392b;}
+.priority-dot.warn{background:#d35400;}
+.priority-dot.good{background:#1e8449;}
+.priority-dot.info{background:#256CB2;}
+.priority-text{font-family:'Inter',sans-serif;font-size:.73rem;color:var(--text);line-height:1.35;font-weight:500;}
+.priority-badge{font-family:'Poppins',sans-serif;font-size:.52rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:1px 6px;border-radius:4px;margin-top:3px;display:inline-block;}
+.priority-badge.danger{background:#fde8e8;color:#c0392b;}
+.priority-badge.warn{background:#fef3e2;color:#d35400;}
+.priority-badge.good{background:#e6f4ea;color:#1e8449;}
+.priority-badge.info{background:#e8f0fe;color:#256CB2;}
+.analytics-detail{padding:28px 32px;overflow-y:auto;}
+.insight-detail-card{background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:24px 28px;margin-bottom:20px;display:none;}
+.insight-detail-card.active{display:block;}
+.insight-detail-header{display:flex;align-items:center;gap:14px;margin-bottom:16px;padding-bottom:14px;border-bottom:1.5px solid var(--border);}
+.insight-detail-icon{font-size:2rem;line-height:1;}
+.insight-detail-meta{flex:1;}
+.insight-detail-title{font-family:'Poppins',sans-serif;font-size:.95rem;font-weight:700;color:var(--text);margin-bottom:3px;}
+.insight-detail-type{font-family:'Inter',sans-serif;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:2px 8px;border-radius:4px;display:inline-block;}
+.insight-detail-type.danger{background:#fde8e8;color:#c0392b;}
+.insight-detail-type.warn{background:#fef3e2;color:#d35400;}
+.insight-detail-type.good{background:#e6f4ea;color:#1e8449;}
+.insight-detail-type.info{background:#e8f0fe;color:#256CB2;}
+.insight-detail-body{font-family:'Inter',sans-serif;font-size:.78rem;color:var(--text);line-height:1.65;}
+.insight-detail-body strong{color:var(--forest);font-weight:600;}
+.insight-detail-body ul{margin:8px 0 8px 16px;padding:0;}
+.insight-detail-body li{margin-bottom:5px;color:var(--muted);}
+.insight-detail-body li strong{color:var(--text);}
+.insight-action-box{background:var(--smoke);border-radius:10px;padding:14px 16px;margin-top:16px;border-left:3px solid var(--lake);}
+.insight-action-label{font-family:'Poppins',sans-serif;font-size:.6rem;font-weight:700;color:var(--lake);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
+.insight-action-text{font-family:'Inter',sans-serif;font-size:.74rem;color:var(--text);}
+.workstream-progress-row{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.workstream-progress-name{font-family:'Poppins',sans-serif;font-size:.7rem;font-weight:600;color:var(--text);width:200px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.workstream-progress-bar{flex:1;height:8px;background:var(--tangrey);border-radius:100px;overflow:hidden;display:flex;}
+.workstream-progress-pct{font-family:'Poppins',sans-serif;font-size:.68rem;font-weight:700;color:var(--muted);width:32px;text-align:right;}
+.analytics-loading{font-family:'Inter',sans-serif;font-size:.84rem;color:var(--muted);text-align:center;padding:64px;background:var(--white);border-radius:12px;margin:32px;}
+@media(max-width:700px){.analytics-body{grid-template-columns:1fr;}.analytics-sidebar{border-right:none;border-bottom:1.5px solid var(--border);}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <h1>Fridays × Booth — Action Plan</h1>
+    <p>Project Gantt &amp; Action Log · Q1/Q2 2026</p>
+  </div>
+  <div class="header-controls">
+    <button class="pill-btn active" id="fAll" onclick="setFilter('all')">All</button>
+    <button class="pill-btn" id="fGreen" onclick="setFilter('🟢')">Completed</button>
+    <button class="pill-btn" id="fYellow" onclick="setFilter('🟡')">On Track</button>
+    <button class="pill-btn" id="fRed" onclick="setFilter('🔴')">Delayed</button>
+    <button class="pill-btn" id="fWhite" onclick="setFilter('⚪')">Not Started</button>
+  </div>
+</header>
+
+<div id="saveBanner" class="save-banner">✓ Changes saved</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('gantt')">Gantt Chart</div>
+  <div class="tab" onclick="switchTab('proj')">Class Projections</div>
+  <div class="tab" onclick="switchTab('log')">Action Log</div>
+  <div class="tab" onclick="switchTab('fte')">12-Month FTE Forecast</div>
+  <div class="tab" onclick="switchTab('analytics')">Smart Analytics</div>
+</div>
+
+<!-- GANTT -->
+<div class="view active" id="view-gantt">
+  <div class="gantt-wrap">
+    <div class="gantt-legend">
+      <div class="legend-item"><span class="legend-dot" style="background:#1D4B3B"></span>Training</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#5B8B92"></span>Quality</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#8B6185"></span>Operations</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#256CB2"></span>Analytics &amp; WFO</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#C09ACD"></span>Governance</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#4A7C5F"></span>Hiring</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#B07D4A"></span>Office Space</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#6B7280"></span>TS to MS</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#c0392b;width:4px;height:14px;border-radius:2px"></span>Today</div>
+      <button class="add-task-btn" onclick="openModal()">＋ Add Task</button>
+    </div>
+    <div class="hint-bar">💡 <strong>Click</strong> any category name, task name, Current, To Be, Start or Due date to edit. Click the status emoji to change it. Hover a bar for details.</div>
+    <div style="display:flex;gap:18px;flex-wrap:wrap;margin-bottom:14px;font-size:.71rem;color:var(--muted);font-family:'Poppins',sans-serif;font-weight:500;">
+      <span>🟢 Completed</span>
+      <span>🟡 On Track</span>
+      <span>🔴 Delayed</span>
+      <span>⚪ Not Started</span>
+    </div>
+    <div id="ganttScrollOuter"
+         onscroll="syncGanttTopScroll(this.scrollLeft)">
+      <div id="ganttScrollTop"
+           style="overflow-x:auto;overflow-y:hidden;height:10px;position:sticky;top:0;z-index:30;background:var(--smoke);margin-bottom:4px;"
+           onscroll="document.getElementById('ganttScrollOuter').scrollLeft=this.scrollLeft">
+        <div id="ganttScrollTopInner" style="height:1px;"></div>
+      </div>
+      <div id="ganttContainer" style="position:relative;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CLASS PROJECTIONS -->
+<div class="view" id="view-proj">
+  <div class="proj-wrap" style="overflow-y:auto;overflow-x:hidden;flex:1;min-height:0;">
+    <div class="proj-toolbar">
+      <div>
+        <input id="projTitle" value="Billable FTE / Headcount (HC)"
+          onchange="flash()"
+          style="font-family:'Poppins',sans-serif;font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;border:none;outline:none;background:transparent;cursor:text;width:320px;display:block;"
+          title="Click to edit title"/>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;">
+          <div class="proj-legend-item"><span class="proj-swatch" style="background:#34A853"></span>PST</div>
+          <div class="proj-legend-item"><span class="proj-swatch" style="background:#FBBC04"></span>Nesting</div>
+          <div class="proj-legend-item"><span class="proj-swatch" style="background:#1a7340"></span>Prod to BAU</div>
+          <div class="proj-legend-item"><span class="proj-swatch" style="background:#fff;border:1.5px solid var(--timberwolf)"></span>Empty</div>
+          <span style="font-size:.66rem;color:var(--muted);font-family:'Inter',sans-serif;">· Click phase cell to cycle · Click date headers &amp; names to edit</span>
+        </div>
+      </div>
+      <button class="add-task-btn" onclick="addProjRow()">＋ Add Row</button>
+    </div>
+    <div id="projScrollWrap" style="overflow-x:auto;border:1.5px solid var(--border);border-radius:10px;">
+      <table class="proj-table" id="projTable" style="border:none;border-radius:0;">
+        <thead id="projHead"></thead>
+        <tbody id="projBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- LOG -->
+<div class="view" id="view-log">
+  <div class="log-wrap">
+    <div class="log-top">
+      <div class="log-filters">
+        <button class="pill-btn light active" onclick="filterLog(this,'all')">All</button>
+        <button class="pill-btn light" onclick="filterLog(this,'High')">High Priority</button>
+        <button class="pill-btn light" onclick="filterLog(this,'In Progress')">In Progress</button>
+        <button class="pill-btn light" onclick="filterLog(this,'Not Started')">Not Started</button>
+        <button class="pill-btn light" onclick="filterLog(this,'Completed')">Completed</button>
+      </div>
+      <button class="log-add-btn" onclick="addLogRow()">＋ Add Action</button>
+    </div>
+    <div class="log-table-wrap">
+      <table class="log-table">
+        <thead><tr>
+          <th>#</th><th>Workstream</th><th>Action Item</th>
+          <th>Fridays</th><th>Booth</th>
+          <th>Priority</th><th>Status</th><th>Due</th>
+          <th>Risk</th><th>Update</th><th>Next Step</th><th></th>
+        </tr></thead>
+        <tbody id="logBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- SUMMARY -->
+<!-- FTE FORECAST -->
+<div class="view" id="view-fte">
+  <div class="fte-wrap">
+    <div class="fte-toolbar">
+      <div>
+        <input id="fteTitle" value="12-Month FTE Forecast"
+          style="font-family:'Poppins',sans-serif;font-size:.85rem;font-weight:700;color:var(--forest);border:none;outline:none;background:transparent;cursor:text;width:320px;"
+          onchange="flash()"/>
+        <div style="font-size:.68rem;color:var(--muted);font-family:'Inter',sans-serif;margin-top:2px;">Click any cell to edit · Tab / Arrow keys to navigate · <strong>Copy from Excel → Paste directly</strong> to fill multiple cells at once</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="add-task-btn" onclick="addFteRow()">＋ Monthly Row</button>
+        <button class="add-task-btn" onclick="addFteRow2()">＋ Weekly Row</button>
+        <button class="add-task-btn" onclick="addFteCol()">＋ Column</button>
+      </div>
+    </div>
+    <div id="fteContainer" style="overflow:auto;" onpaste="handleFtePaste(event)"></div>
+  </div>
+</div>
+
+<!-- SMART ANALYTICS -->
+<div class="view" id="view-analytics">
+  <div class="analytics-wrap">
+    <div class="analytics-header">
+      <div>
+        <h2 style="font-family:'Poppins',sans-serif;font-size:1rem;font-weight:700;color:var(--forest);margin:0;">🤖 Smart Analytics</h2>
+        <p style="font-size:.7rem;color:var(--muted);font-family:'Inter',sans-serif;margin:3px 0 0;">Auto-generated insights from your live project data</p>
+      </div>
+      <button class="add-task-btn" onclick="runAnalytics()" style="display:flex;align-items:center;gap:6px;">
+        <span style="font-size:.9rem;">↻</span> Refresh Analysis
+      </button>
+    </div>
+    <div id="analyticsHero" class="analytics-hero" style="display:none;"></div>
+    <div id="analyticsOutput">
+      <div class="analytics-loading">Click <strong>"Refresh Analysis"</strong> to generate executive insights ✨</div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD TASK MODAL -->
+<div class="modal-overlay" id="taskModal">
+  <div class="modal">
+    <h3>Add New Task</h3>
+    <div class="form-grid">
+      <div class="form-group full">
+        <label class="form-label">Task Name</label>
+        <input class="form-control" id="nName" placeholder="e.g. Agent Onboarding Review"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Workstream / Category</label>
+        <select class="form-control" id="nCat"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <select class="form-control" id="nStatus">
+          <option value="⚪">⚪ Not Started</option>
+          <option value="🟡">🟡 On Track</option>
+          <option value="🟢">🟢 Completed</option>
+          <option value="🔴">🔴 Delayed</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Current Owner</label>
+        <input class="form-control" id="nFrom" placeholder="e.g. Fridays"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">To Be Owner</label>
+        <input class="form-control" id="nTo" placeholder="e.g. Marj"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Start Date</label>
+        <input class="form-control" type="date" id="nStart"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Due Date</label>
+        <input class="form-control" type="date" id="nDue"/>
+      </div>
+      <div class="form-group full">
+        <label class="form-label">Dependencies</label>
+        <input class="form-control" id="nDep" placeholder="e.g. Fridays Alignment"/>
+      </div>
+      <div class="form-group full">
+        <label class="form-label">Definition of Done</label>
+        <input class="form-control" id="nDod" placeholder="When is this task complete?"/>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveTask()">Add Task</button>
+    </div>
+  </div>
+</div>
+
+<!-- Undo/Redo Bar -->
+<div class="undo-bar" id="undoBar">
+  <span id="undoMsg">Change made</span>
+  <button id="undoBtn" onclick="doUndo()" title="Ctrl+Z">↩ Undo</button>
+  <button id="redoBtn" onclick="doRedo()" title="Ctrl+Y">↪ Redo</button>
+</div>
+
+<!-- Status Picker -->
+<div class="overlay-dim" id="dimOverlay" onclick="closeNotes()"></div>
+
+<!-- NOTES SIDE PANEL -->
+<div class="notes-panel" id="notesPanel">
+  <div class="notes-header">
+    <div>
+      <div class="notes-header-title" id="notesPanelTitle">Task Name</div>
+      <div class="notes-header-cat" id="notesPanelCat"></div>
+    </div>
+    <button class="notes-close" onclick="closeNotes()">✕</button>
+  </div>
+  <div class="notes-meta" id="notesPanelMeta"></div>
+  <div class="notes-body">
+    <div>
+      <div class="notes-section-title" style="display:flex;align-items:center;justify-content:space-between;">
+        Definition of Done
+        <span style="font-family:'Inter',sans-serif;font-size:.58rem;color:var(--muted);font-weight:400;font-style:italic;">click to edit</span>
+      </div>
+      <textarea id="notesPanelDod" class="notes-dod-edit"
+        placeholder="No definition of done set — click to add one…"
+        oninput="saveDod()"
+        rows="3"></textarea>
+    </div>
+    <div>
+      <div class="notes-section-title">Notes, Updates &amp; Blockers</div>
+      <div class="notes-entries" id="notesEntries"></div>
+    </div>
+  </div>
+  <div class="notes-add-form">
+    <select id="noteType">
+      <option value="note">📝 Note</option>
+      <option value="update">✅ Update</option>
+      <option value="blocker">🚫 Blocker</option>
+    </select>
+    <textarea id="noteText" placeholder="Add a note, update, or blocker…" rows="3"></textarea>
+    <button class="notes-submit" onclick="submitNote()">Add Entry</button>
+  </div>
+</div>
+
+<div id="spPicker" class="status-picker" style="display:none">
+  <span class="sp-opt" title="On Track" onclick="pickStatus('🟢')">🟢</span>
+  <span class="sp-opt" title="On Track" onclick="pickStatus('🟡')">🟡</span>
+  <span class="sp-opt" title="Not Started" onclick="pickStatus('⚪')">⚪</span>
+  <span class="sp-opt" title="Delayed" onclick="pickStatus('🔴')">🔴</span>
+  <span class="sp-opt" title="No Status" onclick="pickStatus('')">—</span>
+</div>
+
+<div class="tooltip" id="tip"></div>
+
+<script>
+// ─── DATA ─────────────────────────────────────────────────────────────────────
+const CATS=[
+  {name:'Hiring',color:'#4A7C5F',tasks:[
+    {name:'Wave 1',current:'25',to:'23',dod:'Certified: Nesting Criteria',status:'🟡',start:'2026-03-16',due:'2026-03-23',dep:''},
+    {name:'Wave 2',current:'25',to:'30',dod:'Certified: Nesting Criteria',status:'🟡',start:'2026-03-16',due:'2026-03-23',dep:''},
+    {name:'Wave 3',current:'30',to:'37',dod:'Certified: Nesting Criteria',status:'🟡',start:'2026-03-23',due:'2026-04-06',dep:''},
+    {name:'Wave 4',current:'30',to:'46',dod:'Certified: Nesting Criteria',status:'🟡',start:'2026-04-06',due:'2026-04-20',dep:''},
+    {name:'TS to MS Cut Over',current:'48',to:'48',dod:'Transitioned to MS Management',status:'⚪',start:'2026-04-06',due:'2026-04-16',dep:''},
+    {name:'Wave 5',current:'30',to:'Hold',dod:'',status:'⚪',start:'2026-06-01',due:'2026-06-08',dep:''},
+    {name:'Wave 6',current:'30',to:'Hold',dod:'',status:'⚪',start:'2026-06-01',due:'2026-06-08',dep:''},
+  ]},
+  {name:'Training',color:'#1D4B3B',tasks:[
+    {name:'Completion of Training Documentation',current:'Mia',to:'Ivee',dod:'Complete hand over to SOPs, Training materials with Scenario based exercises.',status:'🟡',start:'2026-03-16',due:'2026-04-20',dep:'Clarity of Handover completion/(DoD)'},
+    {name:'Training & Nesting Assessment',current:'Fridays',to:'Ivee',dod:'Aligned scoring based on training milestones, pass and fail criteria',status:'🟢',start:'2026-03-16',due:'2026-03-30',dep:''},
+    {name:'Training & Nesting Assessment Tool',current:'Fridays',to:'Fridays',dod:'To finalize tool to use for long term training assessment that could provide comprehensive and actionable insights both individual and team performance.',status:'🟢',start:'2026-03-16',due:'2026-03-30',dep:''},
+    {name:'Training Certification Framework Sign off',current:'Fridays',to:'Ivee',dod:'Sign off From Fridays on Agreed certification process',status:'🟢',start:'2026-03-16',due:'2026-03-30',dep:''},
+    {name:'Trainer Certification',current:'Fridays',to:'Ivee',dod:'Certify Booth Trainer to handle future classes independently',status:'🟡',start:'2026-03-16',due:'2026-04-10',dep:''},
+  ]},
+  {name:'Quality',color:'#5B8B92',tasks:[
+    {name:'QA Parameters & Scoring',current:'Fridays',to:'Marj',dod:'All evaluation criteria have clear definitions, scoring logic, and examples. Pass/fail thresholds and critical error definitions are agreed. QA team trained and able to apply scoring.',status:'🟢',start:'2026-03-16',due:'2026-03-30',dep:''},
+    {name:'QA Tool',current:'Fridays',to:'Chad',dod:'QA tool is live with finalized scorecard and scoring logic. Data capture supports audit tracking, trends, and agent level insights.',status:'🟡',start:'2026-03-16',due:'2026-04-30',dep:'Short Term tool: Live / Long Term Tool: Recommended Booth Tool'},
+    {name:'Client QA Calibration',current:'Fridays',to:'Marj',dod:'Consistently deliver Calibration framework. Limit to +/-7% Calibration Variance.',status:'🟡',start:'2026-03-16',due:'2026-04-30',dep:'Fridays Alignment'},
+    {name:'QA Qualification & Onboarding',current:'Fridays',to:'Marj/Tanya',dod:'QA onboarding program and materials finalized.',status:'🟡',start:'2026-03-30',due:'2026-03-30',dep:'Fridays Alignment'},
+    {name:'QA Certification',current:'Fridays',to:'Marj/Tanya',dod:'Certification criteria defined (knowledge, audit accuracy, calibration alignment)',status:'🟡',start:'2026-03-16',due:'2026-06-22',dep:'90D Capability Building & Certification Program'},
+  ]},
+  {name:'Operations',color:'#8B6185',tasks:[
+    {name:'KPI Benchmarking & Agreement',current:'Fridays',to:'Marj',dod:'Aligned on KPI targets using a combination of client targets, historical data, and industry standards.',status:'🟡',start:'2026-04-06',due:'2026-04-10',dep:''},
+    {name:'Performance Management',current:'Fridays',to:'Marj',dod:'Defined Performance framework (KPIs, targets, review cadence, accountability)\nMonthly performance reviews\nPerformance Improvement Plan (PIP) framework documented (criteria, duration, success measures)',status:'🟡',start:'2026-04-06',due:'2026-04-10',dep:''},
+    {name:'Escalation Handling',current:'Fridays',to:'Marj',dod:'Escalations Process & Turn Around Time:\n1. Any patient reporting a clinical safety concern or adverse event\n2. Refund requests above $[X] or outside standard policy\n3. Any media or PR-sensitive patient contact requiring OpenLoop (OL) involvement\n4. Complaints threatening legal action or regulatory concern\n5. Technical issues affecting the Intercom/Fin platform broadly\n6. Situations not covered by existing SOPs — Booth should flag and await guidance, not improvise',status:'🟡',start:'2026-04-06',due:'2026-04-10',dep:''},
+  ]},
+  {name:'Analytics & Workforce Optimization',color:'#256CB2',tasks:[
+    {name:'Metric Reporting Filter Alignment',current:'Fridays',to:'Joyce',dod:'Alignment on Intercom report filters and criteria across reports for accurate, comparable metrics.',status:'🟡',start:'2026-03-30',due:'2026-03-30',dep:''},
+    {name:'Forecast & Capacity Planning',current:'Fridays',to:'Joyce',dod:'WFM to be responsible for building and validating demand/capacity forecasts, then driving stakeholder alignment.',status:'🟡',start:'2026-04-06',due:'2026-04-06',dep:''},
+    {name:'Scheduling Optimization',current:'Fridays',to:'Joyce',dod:'WFM to own schedule design based on arrival trend insights.',status:'🟡',start:'2026-04-06',due:'2026-04-06',dep:'TS Communication to employees will be owned by MS after Cut over (4/16)'},
+    {name:'RTA Management',current:'Fridays',to:'Joyce',dod:'WFM to manage real-time queue monitoring & adherence',status:'🟡',start:'2026-04-06',due:'2026-04-06',dep:'Existing RTA Availability / RTA Process Sign-Off'},
+    {name:'WFM Touchpoint',current:'Fridays',to:'Joyce',dod:'Scheduled WFM Cadence with Fridays',status:'🟡',start:'2026-04-06',due:'2026-04-06',dep:'Proposal: Weekly RTM & Monthly Long Range Capacity'},
+  ]},
+  {name:'Fridays–Booth Overall Governance',color:'#C09ACD',tasks:[
+    {name:'Leadership Touchpoints',current:'Fridays',to:'Marj/Kathy',dod:'Establish Engagement model',status:'🟡',start:'2026-03-16',due:'',dep:''},
+    {name:'QBR & MBR',current:'Fridays',to:'Marj',dod:'Finalized QBR/MBR structure and templates (KPIs, insights, risks, action plans)',status:'🟡',start:'2026-03-16',due:'2026-04-17',dep:'Proposal: 2nd Friday of the month'},
+  ]},
+  {name:'Office Space',color:'#B07D4A',tasks:[
+    {name:'Cebu',current:'',to:'Kathy',dod:'Wall Removal',status:'🟡',start:'2026-03-16',due:'2026-06-01',dep:''},
+    {name:'Colombia',current:'',to:'Suselle',dod:'Finalize Fridays seats & site location',status:'🟡',start:'2026-06-01',due:'2026-06-01',dep:'Long term space'},
+    {name:'Manila',current:'',to:'Kathy',dod:'Finalize Fridays seats & site location',status:'🟢',start:'2026-03-30',due:'2026-03-30',dep:'Short Term/Swing Space → Long Term Space (7/27)'},
+  ]},
+  {name:'TS to MS',color:'#6B7280',tasks:[
+    {name:'Designing of future Org Structure, Job Description, Review of compensation.',current:'',to:'Kathy/Marj',dod:'Finalized Future-state org structure',status:'🟡',start:'2026-04-20',due:'2026-03-30',dep:''},
+    {name:'Leadership Hiring (1)',current:'',to:'Kathy/Marj',dod:'Confirmed start date with onboarding plan in place',status:'⚪',start:'2026-05-25',due:'2026-05-11',dep:''},
+    {name:'Preparation of Employment contract changes',current:'',to:'Kathy/Marj',dod:'Final contract templates approved and ready for issuance',status:'⚪',start:'2026-05-25',due:'2026-03-30',dep:''},
+    {name:'TS Team announcement (Separate CO and PH)',current:'',to:'Kathy/Marj',dod:'Announcement delivered with clear next steps and support channels',status:'⚪',start:'2026-05-25',due:'2026-04-06',dep:''},
+    {name:'Individual discussions on Job / Role Changes',current:'',to:'Marj',dod:'Concerns captured and escalated if needed',status:'⚪',start:'2026-05-25',due:'2026-04-06',dep:''},
+    {name:'Contract acceptance & sign completion',current:'',to:'Marj',dod:'Updated contracts issued to all impacted employees - 100%',status:'⚪',start:'2026-05-25',due:'2026-04-06',dep:''},
+    {name:'Official Cut over',current:'',to:'Kathy/Marj',dod:'',status:'⚪',start:'2026-05-25',due:'2026-04-16',dep:''},
+  ]},
+];
+
+let LOG=[
+  {id:1,ws:'QA Calibration',action:'Complete Week 1 calibration session',fo:'Mia',bo:'Marj',priority:'High',status:'In Progress',due:'2026-03-22',risk:'Medium',update:'2/5 audits aligned',next:'Complete remaining audits'},
+  {id:2,ws:'Performance Mgmt',action:'Launch coaching for bottom 10%',fo:'',bo:'',priority:'High',status:'Not Started',due:'2026-03-27',risk:'High',update:'Pending QA results',next:'Identify bottom performers'},
+  {id:3,ws:'Escalations',action:'Finalize escalation workflow',fo:'',bo:'',priority:'Medium',status:'Completed',due:'2026-03-18',risk:'Low',update:'Signed off by client',next:'Monitor adherence'},
+  {id:4,ws:'Workforce',action:'FTE required to cover Spanish volume',fo:'',bo:'Joyce',priority:'Medium',status:'In Review',due:'',risk:'Medium',update:'',next:''},
+];
+let nid=5;
+
+// ─── HELPERS ──────────────────────────────────────────────────────────────────
+const TODAY=new Date();TODAY.setHours(0,0,0,0);
+const TS=new Date('2026-03-16');
+let TE=new Date('2026-08-31');
+let TD=Math.round((TE-TS)/86400000);
+const pd=s=>s?new Date(s):null;
+const fd=d=>d?d.toLocaleDateString('en-US',{month:'short',day:'numeric'}):'—';
+const db=(a,b)=>Math.round((b-a)/86400000);
+const pct=d=>{if(!d)return 0;return Math.max(0,Math.min(100,(db(TS,d)/TD)*100));};
+
+let WEEKS=[];
+function rebuildWeeks(){
+  WEEKS=[];let d=new Date(TS);
+  while(d<=TE){WEEKS.push(new Date(d));d=new Date(d.getTime()+7*86400000);}
+}
+rebuildWeeks();
+let CW=Math.max(42,Math.floor(540/WEEKS.length));
+
+// Auto-extend timeline if any due date goes beyond TE
+function autoExtendTimeline(){
+  let maxDate=new Date(TE);
+  CATS.forEach(cat=>cat.tasks.forEach(t=>{
+    if(t.due){const d=new Date(t.due);if(d>maxDate)maxDate=d;}
+  }));
+  // Add 2-week buffer beyond latest due date
+  const buffered=new Date(maxDate.getTime()+14*86400000);
+  if(buffered>TE){
+    TE=buffered;
+    TD=Math.round((TE-TS)/86400000);
+    rebuildWeeks();
+    CW=Math.max(42,Math.floor(540/WEEKS.length));
+  }
+}
+
+// ─── STATUS PICKER ────────────────────────────────────────────────────────────
+let _sCb=null;
+function openSP(e,cb){_sCb=cb;const p=document.getElementById('spPicker');p.style.display='flex';p.style.left=(e.clientX+6)+'px';p.style.top=(e.clientY+6)+'px';e.stopPropagation();}
+function pickStatus(v){
+  if(_sCb)_sCb(v);
+  document.getElementById('spPicker').style.display='none';
+  _sCb=null;
+  if(document.getElementById('notesPanel').classList.contains('open')) refreshNotesMeta();
+}
+document.addEventListener('click',()=>{document.getElementById('spPicker').style.display='none';});
+
+// ─── SAVE FLASH ───────────────────────────────────────────────────────────────
+let st;
+function flash(){
+  if(typeof pushHistory==='function') pushHistory();
+  const b=document.getElementById('saveBanner');
+  b.textContent='✓ Saving…';
+  b.style.background='var(--lake)';
+  b.classList.add('show');
+  clearTimeout(st);
+  st=setTimeout(()=>b.classList.remove('show'),2000);
+  if(typeof window.saveToFirebase==='function') window.saveToFirebase();
+}
+
+
+// ─── GANTT ────────────────────────────────────────────────────────────────────
+let CF='all';
+function setFilter(f){
+  CF=f;
+  // Always jump to Gantt tab so the filtered view is visible
+  switchTab('gantt');
+  [{id:'fAll',v:'all'},{id:'fGreen',v:'🟢'},{id:'fYellow',v:'🟡'},{id:'fRed',v:'🔴'},{id:'fWhite',v:'⚪'}].forEach(x=>{
+    const el=document.getElementById(x.id);
+    if(el) el.classList.toggle('active',x.v===f);
+  });
+  renderGantt();
+}
+function taskMatchesFilter(task){
+  if(CF==='all') return true;
+  const s=task.status||'⚪'; // treat empty/missing status as Not Started
+  return s===CF;
+}
+
+function renderGantt(){
+  const tp=pct(TODAY);
+  let h=`<table class="gantt-table" cellspacing="0" cellpadding="0">
+  <thead style="position:sticky;top:14px;z-index:15;"><tr>
+    <th style="width:300px;min-width:260px;border-bottom:1.5px solid #C7C5C4;padding-bottom:5px;background:var(--smoke);"></th>
+    <th style="width:90px;min-width:80px;border-bottom:1.5px solid #C7C5C4;font-family:'Poppins',sans-serif;font-size:.62rem;font-weight:700;color:#707070;padding:0 7px;background:var(--smoke);">CURRENT</th>
+    <th style="width:90px;min-width:80px;border-bottom:1.5px solid #C7C5C4;font-family:'Poppins',sans-serif;font-size:.62rem;font-weight:700;color:#707070;padding:0 7px;background:var(--smoke);">TO BE</th>
+    <th class="status-col" style="border-bottom:1.5px solid #C7C5C4;font-family:'Poppins',sans-serif;font-size:.62rem;font-weight:700;color:#707070;width:60px;white-space:nowrap;padding:0 5px;background:var(--smoke);">STATUS</th>
+    <th class="due-col" style="border-bottom:1.5px solid #C7C5C4;font-family:'Poppins',sans-serif;font-size:.62rem;font-weight:700;color:#707070;padding-left:7px;width:82px;background:var(--smoke);">START</th>
+    <th class="due-col" style="border-bottom:1.5px solid #C7C5C4;font-family:'Poppins',sans-serif;font-size:.62rem;font-weight:700;color:#707070;padding-left:7px;width:82px;background:var(--smoke);">DUE</th>
+    <th style="width:160px;min-width:130px;border-bottom:1.5px solid #C7C5C4;font-family:'Poppins',sans-serif;font-size:.62rem;font-weight:700;color:#707070;padding:0 7px;background:var(--smoke);">DEPENDENCIES</th>
+    <th colspan="${WEEKS.length}" style="padding:0;position:relative;background:var(--smoke);">
+      <div style="display:flex;position:relative;">
+        ${WEEKS.map(w=>`<div class="timeline-header" style="width:${CW}px;flex-shrink:0;">${w.toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>`).join('')}
+      </div>
+    </th>
+  </tr></thead><tbody>`;
+
+  CATS.forEach((cat,ci)=>{
+    const vis=cat.tasks.filter(t=>taskMatchesFilter(t));
+    if(!vis.length) return;
+
+    h+=`<tr class="cat-header-row">
+      <td style="background:#f0f0ee;padding:10px 4px 8px 4px;">
+        <div class="cat-label-inner"><span class="cat-stripe" style="background:${cat.color}"></span>
+        <span style="color:${cat.color};cursor:pointer;border-bottom:1.5px dashed transparent;transition:border-color .15s;"
+          onmouseover="this.style.borderBottomColor='${cat.color}'"
+          onmouseout="this.style.borderBottomColor='transparent'"
+          onclick="editCatName(${ci},this)">${cat.name}</span>
+        <button onclick="openModal(${ci})" title="Add task to ${cat.name}"
+          style="margin-left:8px;background:none;border:1.5px solid ${cat.color};color:${cat.color};border-radius:4px;padding:1px 7px;font-size:.58rem;font-family:'Poppins',sans-serif;font-weight:700;cursor:pointer;opacity:.7;transition:opacity .15s;"
+          onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.7'">＋ Row</button>
+        </div>
+      </td>
+      <td style="background:#f0f0ee;"></td>
+      <td style="background:#f0f0ee;"></td>
+      <td style="background:#f0f0ee;"></td>
+      <td style="background:#f0f0ee;"></td>
+      <td style="background:#f0f0ee;"></td>
+      <td style="background:#f0f0ee;"></td>
+      <td colspan="${WEEKS.length}" style="background:#f0f0ee;"></td>
+    </tr>`;
+
+    cat.tasks.forEach((task,ti)=>{
+      if(!taskMatchesFilter(task)) return;
+      const due=pd(task.due);
+      const start=pd(task.start);
+      const ov=due&&due<TODAY;
+      const sn=due&&!ov&&db(TODAY,due)<=14;
+      const sp=start?pct(start):0;
+      const ep=due?pct(due):Math.min(sp+20,65);
+      const bLeft=sp;
+      const bw=Math.max(ep-sp,1.5);
+      h+=`<tr class="task-row">
+        <td class="task-info">
+          <div class="task-name-wrap">
+            <span class="task-name" onclick="editName(${ci},${ti},this)">${task.name}</span>
+            <button class="note-btn" onclick="openNotes(${ci},${ti})"
+              onmouseenter="showNoteTip(event,${ci},${ti})" onmouseleave="hideTip()"
+              title="Notes & comments">
+              💬${(task.notes&&task.notes.length)?`<span class="note-badge">${task.notes.length}</span>`:''}
+            </button>
+            <button class="del-btn" onclick="delTask(${ci},${ti})" title="Delete">×</button>
+          </div>
+        </td>
+        <td style="width:90px;padding:0 7px;vertical-align:middle;">
+          <span class="owner-tag" onclick="editOwner(${ci},${ti},'current',this)" title="Click to edit">${task.current||'—'}</span>
+        </td>
+        <td style="width:90px;padding:0 7px;vertical-align:middle;">
+          <span class="owner-tag" onclick="editOwner(${ci},${ti},'to',this)" title="Click to edit">${task.to||'—'}</span>
+        </td>
+        <td class="status-col" onclick="openSP(event,v=>{CATS[${ci}].tasks[${ti}].status=v;renderGantt();flash();})"
+            title="Click to change">${task.status||'—'}</td>
+        <td class="due-col" onclick="editStart(${ci},${ti},this)" title="Click to edit start date">${fd(start)}</td>
+        <td class="due-col ${ov?'overdue':sn?'soon':''}" onclick="editDue(${ci},${ti},this)" title="Click to edit due date">${fd(due)}</td>
+        <td style="width:160px;padding:4px 7px;vertical-align:middle;font-size:.63rem;color:var(--muted);font-family:'Inter',sans-serif;line-height:1.4;cursor:pointer;"
+            onclick="editDep(${ci},${ti},this)" title="Click to edit dependency">${task.dep||'—'}</td>
+        <td colspan="${WEEKS.length}" class="bar-cell" style="position:relative;">
+          <div style="position:relative;height:30px;display:flex;align-items:center;">
+            <div style="width:100%;height:22px;position:relative;">
+              <div style="position:absolute;left:${bLeft}%;width:${bw}%;height:100%;"
+                   onmouseenter="showTip(event,${ci},${ti})" onmouseleave="hideTip()">
+                <div style="width:100%;height:100%;background:${cat.color};opacity:.8;border-radius:6px;cursor:default;transition:opacity .15s;"
+                     onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='.8'"></div>
+              </div>
+            </div>
+          </div>
+        </td>
+      </tr>`;
+    });
+  });
+  h+=`</tbody></table>`;
+  document.getElementById('ganttContainer').innerHTML=h;
+
+  // Inject single full-height TODAY line over the entire table
+  // Sync top mirror scrollbar width to actual content width
+  requestAnimationFrame(()=>{
+    const container=document.getElementById('ganttContainer');
+    const topInner=document.getElementById('ganttScrollTopInner');
+    if(container&&topInner) topInner.style.width=container.scrollWidth+'px';
+    positionTodayLine();
+  });
+}
+
+function positionTodayLine(){
+  const container=document.getElementById('ganttContainer');
+  if(!container) return;
+  const table=container.querySelector('.gantt-table');
+  if(!table) return;
+  const th=table.querySelector('th:last-child');
+  const thead=table.querySelector('thead');
+  if(!th) return;
+  const containerRect=container.getBoundingClientRect();
+  const thRect=th.getBoundingClientRect();
+  const theadHeight=thead ? thead.getBoundingClientRect().height : 28;
+  const timelineLeft=thRect.left - containerRect.left;
+  const timelineWidth=thRect.width;
+  const tp=pct(TODAY);
+  const lineLeft=timelineLeft + (tp/100)*timelineWidth;
+  const existing=document.getElementById('ganttTodayLine');
+  if(existing) existing.remove();
+  const line=document.createElement('div');
+  line.id='ganttTodayLine';
+  line.style.cssText=`position:absolute;top:0;left:${lineLeft}px;width:2px;height:100%;background:#c0392b;z-index:20;pointer-events:none;`;
+  const label=document.createElement('span');
+  label.textContent='TODAY';
+  label.style.cssText=`position:absolute;top:${theadHeight+3}px;left:50%;transform:translateX(-50%);font-size:.52rem;color:#c0392b;white-space:nowrap;font-family:Poppins,sans-serif;font-weight:700;letter-spacing:.06em;background:#fff;padding:0 4px;border-radius:2px;`;
+  line.appendChild(label);
+  container.appendChild(line);
+}
+
+// Listen for resize (zoom) and scroll to reposition today line
+window.addEventListener('resize', positionTodayLine);
+document.addEventListener('scroll', positionTodayLine, true);
+function editCatName(ci,el){
+  const v=CATS[ci].name;
+  const inp=document.createElement('input');
+  inp.className='inline-input';
+  inp.value=v;
+  inp.style.cssText='width:220px;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;';
+  el.replaceWith(inp);inp.focus();inp.select();
+  const commit=()=>{CATS[ci].name=inp.value.trim()||v;renderGantt();flash();};
+  inp.onblur=commit;
+  inp.onkeydown=e=>{if(e.key==='Enter')commit();if(e.key==='Escape'){CATS[ci].name=v;renderGantt();}};
+}
+function editName(ci,ti,el){
+  const v=CATS[ci].tasks[ti].name;
+  const inp=document.createElement('input');inp.className='inline-input';inp.value=v;inp.style.width='200px';
+  el.replaceWith(inp);inp.focus();inp.select();
+  const commit=()=>{CATS[ci].tasks[ti].name=inp.value||v;renderGantt();if(_notesCi===ci&&_notesTi===ti)refreshNotesMeta();flash();};
+  inp.onblur=commit;
+  inp.onkeydown=e=>{if(e.key==='Enter')commit();if(e.key==='Escape'){CATS[ci].tasks[ti].name=v;renderGantt();}};
+}
+function editOwner(ci,ti,f,el){
+  const v=CATS[ci].tasks[ti][f];
+  const inp=document.createElement('input');inp.className='owner-input';inp.value=v;
+  el.replaceWith(inp);inp.focus();inp.select();
+  const commit=()=>{CATS[ci].tasks[ti][f]=inp.value||v;renderGantt();if(_notesCi===ci&&_notesTi===ti)refreshNotesMeta();flash();};
+  inp.onblur=commit;
+  inp.onkeydown=e=>{if(e.key==='Enter')commit();if(e.key==='Escape'){CATS[ci].tasks[ti][f]=v;renderGantt();}};
+}
+function editStart(ci,ti,el){
+  const task=CATS[ci].tasks[ti];
+  const inp=document.createElement('input');inp.type='date';inp.className='date-input';inp.value=task.start||'';
+  el.replaceWith(inp);inp.focus();
+  const commit=()=>{
+    task.start=inp.value||'';
+    autoExtendTimeline();
+    renderGantt();
+    if(_notesCi===ci&&_notesTi===ti) refreshNotesMeta();
+    flash();
+  };
+  inp.onblur=commit;
+  inp.onkeydown=e=>{if(e.key==='Enter')commit();if(e.key==='Escape')renderGantt();};
+}
+function editDep(ci,ti,el){
+  const task=CATS[ci].tasks[ti];
+  const v=task.dep||'';
+  const inp=document.createElement('input');
+  inp.className='inline-input';
+  inp.value=v;
+  inp.style.cssText='font-size:.63rem;font-weight:400;font-family:Inter,sans-serif;color:var(--muted);width:150px;';
+  inp.placeholder='Add dependency…';
+  el.replaceWith(inp);inp.focus();inp.select();
+  const commit=()=>{task.dep=inp.value.trim();renderGantt();flash();};
+  inp.onblur=commit;
+  inp.onkeydown=e=>{if(e.key==='Enter')commit();if(e.key==='Escape'){task.dep=v;renderGantt();}};
+}
+function editDue(ci,ti,el){
+  const task=CATS[ci].tasks[ti];
+  const inp=document.createElement('input');inp.type='date';inp.className='date-input';inp.value=task.due||'';
+  el.replaceWith(inp);inp.focus();
+  const commit=()=>{
+    task.due=inp.value||'';
+    autoExtendTimeline();
+    renderGantt();
+    if(_notesCi===ci&&_notesTi===ti) refreshNotesMeta();
+    flash();
+  };
+  inp.onblur=commit;
+  inp.onkeydown=e=>{if(e.key==='Enter')commit();if(e.key==='Escape')renderGantt();};
+}
+function delTask(ci,ti){if(confirm(`Remove "${CATS[ci].tasks[ti].name}"?`)){CATS[ci].tasks.splice(ti,1);renderGantt();flash();}}
+
+// Add task modal
+function openModal(preCi){
+  // Populate category dropdown from live CATS
+  const sel=document.getElementById('nCat');
+  sel.innerHTML=CATS.map((c,i)=>`<option value="${i}">${c.name}</option>`).join('');
+  if(preCi!==undefined) sel.value=preCi;
+  document.getElementById('taskModal').classList.add('open');
+  document.getElementById('nName').focus();
+}
+function closeModal(){document.getElementById('taskModal').classList.remove('open');}
+function saveTask(){
+  const name=document.getElementById('nName').value.trim();
+  if(!name){alert('Please enter a task name.');return;}
+  const ci=parseInt(document.getElementById('nCat').value);
+  CATS[ci].tasks.push({
+    name,
+    current:document.getElementById('nFrom').value||'',
+    to:document.getElementById('nTo').value||'',
+    dod:document.getElementById('nDod').value||'',
+    dep:document.getElementById('nDep').value||'',
+    status:document.getElementById('nStatus').value||'⚪',
+    start:document.getElementById('nStart').value||'',
+    due:document.getElementById('nDue').value||''
+  });
+  closeModal();renderGantt();flash();
+  ['nName','nFrom','nTo','nDue','nStart','nDod','nDep'].forEach(id=>document.getElementById(id).value='');
+}
+
+// Tooltip
+function showTip(e,ci,ti){
+  const t=CATS[ci].tasks[ti];const due=pd(t.due);
+  document.getElementById('tip').innerHTML=`
+    <div class="tooltip-title">${t.name}</div>
+    <div class="tooltip-row"><span class="tooltip-label">From</span><span class="tooltip-val">${t.current}</span></div>
+    <div class="tooltip-row"><span class="tooltip-label">To</span><span class="tooltip-val">${t.to}</span></div>
+    <div class="tooltip-row"><span class="tooltip-label">Start</span><span class="tooltip-val">${fd(pd(t.start))}</span></div>
+    <div class="tooltip-row"><span class="tooltip-label">Due</span><span class="tooltip-val">${fd(due)}</span></div>
+    <div class="tooltip-row"><span class="tooltip-label">Status</span><span class="tooltip-val">${t.status||'—'}</span></div>
+    ${t.dep?`<div class="tooltip-row"><span class="tooltip-label">Depends on</span><span class="tooltip-val">${t.dep}</span></div>`:''}
+    ${t.dod?`<div class="tooltip-row"><span class="tooltip-label">DoD</span><span class="tooltip-val">${t.dod}</span></div>`:''}`;
+  document.getElementById('tip').style.display='block';mvTip(e);
+}
+function syncGanttTopScroll(left){
+  const top=document.getElementById('ganttScrollTop');
+  if(top) top.scrollLeft=left;
+}
+
+function hideTip(){document.getElementById('tip').style.display='none';}
+
+function showNoteTip(e,ci,ti){
+  const t=CATS[ci].tasks[ti];
+  const tip=document.getElementById('tip');
+  const typeLabel={note:'📝 Note',update:'✅ Update',blocker:'🚫 Blocker'};
+
+  let html=`<div class="tooltip-title">💬 ${t.name}</div>`;
+
+  // Definition of Done
+  if(t.dod&&t.dod.trim()){
+    html+=`<div class="tooltip-row">
+      <span class="tooltip-label">DoD</span>
+      <span class="tooltip-val" style="color:var(--forest);font-style:italic;max-width:240px;display:block;">${t.dod.length>120?t.dod.substring(0,120)+'…':t.dod}</span>
+    </div>`;
+  } else {
+    html+=`<div class="tooltip-row">
+      <span class="tooltip-label">DoD</span>
+      <span class="tooltip-val" style="color:var(--timberwolf);font-style:italic;">No definition of done set</span>
+    </div>`;
+  }
+
+  // Notes / Updates / Blockers
+  if(t.notes&&t.notes.length){
+    html+=`<div style="margin-top:10px;border-top:1px solid var(--border);padding-top:8px;">
+      <div style="font-family:'Poppins',sans-serif;font-size:.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Recent Notes</div>`;
+    const recent=[...t.notes].reverse().slice(0,3);
+    recent.forEach(n=>{
+      const color=n.type==='blocker'?'#c0392b':n.type==='update'?'#1e8449':'#256CB2';
+      html+=`<div style="margin-bottom:6px;padding:5px 8px;background:var(--smoke);border-radius:6px;border-left:3px solid ${color};">
+        <div style="font-family:'Poppins',sans-serif;font-size:.58rem;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.04em;">${typeLabel[n.type]||n.type}</div>
+        <div style="font-family:'Inter',sans-serif;font-size:.71rem;color:var(--text);margin-top:2px;line-height:1.35;">${n.text.length>80?n.text.substring(0,80)+'…':n.text}</div>
+        <div style="font-size:.58rem;color:var(--timberwolf);margin-top:2px;">${n.date}</div>
+      </div>`;
+    });
+    if(t.notes.length>3){
+      html+=`<div style="font-size:.62rem;color:var(--muted);font-family:'Inter',sans-serif;text-align:center;padding-top:2px;">+${t.notes.length-3} more — click to open</div>`;
+    }
+    html+=`</div>`;
+  } else {
+    html+=`<div style="margin-top:8px;font-size:.68rem;color:var(--timberwolf);font-family:'Inter',sans-serif;font-style:italic;">No notes yet — click to add one</div>`;
+  }
+
+  tip.innerHTML=html;
+  tip.style.display='block';
+  const r=tip.getBoundingClientRect();
+  let x=e.clientX+14, y=e.clientY+14;
+  if(x+r.width>window.innerWidth-10) x=e.clientX-r.width-10;
+  if(y+r.height>window.innerHeight-10) y=e.clientY-r.height-10;
+  tip.style.left=x+'px';
+  tip.style.top=y+'px';
+}
+function mvTip(e){let x=e.clientX+14,y=e.clientY+14;if(x+315>window.innerWidth)x=e.clientX-320;document.getElementById('tip').style.cssText+=`;left:${x}px;top:${y}px;`;}
+document.addEventListener('mousemove',e=>{if(document.getElementById('tip').style.display==='block')mvTip(e);});
+
+// ─── ACTION LOG ───────────────────────────────────────────────────────────────
+let LF='all';
+function filterLog(btn,f){LF=f;document.querySelectorAll('.log-filters .pill-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderLog();}
+
+const SC=s=>({['In Progress']:'bip',Completed:'bco',['Not Started']:'bns',['In Review']:'bir'}[s]||'bns');
+const PC=p=>p==='High'?'bh':p==='Medium'?'bm':'bl';
+const RC=r=>r==='High'?'bh':r==='Medium'?'bm':r==='Low'?'bl':'';
+const STATS=['In Progress','Not Started','Completed','In Review'];
+
+function renderLog(){
+  const rows=LOG.filter(r=>{if(LF==='all')return true;if(LF==='High')return r.priority==='High';return r.status===LF;});
+  document.getElementById('logBody').innerHTML=rows.map(r=>{
+    const due=pd(r.due);const ov=due&&due<TODAY;
+    return `<tr>
+      <td style="font-size:.7rem;color:var(--muted);font-weight:600">${r.id}</td>
+      <td><span class="ed" contenteditable onblur="upLog(${r.id},'ws',this.innerText)">${r.ws}</span></td>
+      <td style="max-width:190px"><span class="ed" contenteditable onblur="upLog(${r.id},'action',this.innerText)">${r.action}</span></td>
+      <td><span class="ed" contenteditable onblur="upLog(${r.id},'fo',this.innerText)">${r.fo||'—'}</span></td>
+      <td><span class="ed" contenteditable onblur="upLog(${r.id},'bo',this.innerText)">${r.bo||'—'}</span></td>
+      <td><span class="badge ${PC(r.priority)}" onclick="cycF(${r.id},'priority',['High','Medium','Low'])">${r.priority}</span></td>
+      <td><span class="badge ${SC(r.status)}" onclick="cycS(${r.id})">${r.status}</span></td>
+      <td style="${ov?'color:#c0392b;font-weight:700':'color:var(--muted)'}">
+        <input type="date" value="${r.due||''}" onchange="upLog(${r.id},'due',this.value);renderLog();flash();"
+          style="border:none;background:transparent;font-size:.68rem;color:inherit;cursor:pointer;font-family:'Inter',sans-serif;"/>
+      </td>
+      <td>${r.risk&&r.risk!=='—'?`<span class="badge ${RC(r.risk)}" onclick="cycF(${r.id},'risk',['High','Medium','Low'])">${r.risk}</span>`:'—'}</td>
+      <td><span class="ed" contenteditable onblur="upLog(${r.id},'update',this.innerText)">${r.update||'—'}</span></td>
+      <td><span class="ed" contenteditable onblur="upLog(${r.id},'next',this.innerText)">${r.next||'—'}</span></td>
+      <td><button class="rdel" onclick="delLog(${r.id})">×</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function upLog(id,f,v){const r=LOG.find(x=>x.id===id);if(r){r[f]=v==='—'?'':v;flash();}}
+function cycS(id){const r=LOG.find(x=>x.id===id);if(!r)return;r.status=STATS[(STATS.indexOf(r.status)+1)%STATS.length];flash();renderLog();}
+function cycF(id,f,opts){const r=LOG.find(x=>x.id===id);if(!r)return;r[f]=opts[(opts.indexOf(r[f])+1)%opts.length];flash();renderLog();}
+function addLogRow(){LOG.push({id:nid++,ws:'New',action:'New action item',fo:'',bo:'',priority:'Medium',status:'Not Started',due:'',risk:'Medium',update:'',next:''});renderLog();flash();}
+function delLog(id){if(confirm('Remove this action?')){LOG=LOG.filter(x=>x.id!==id);renderLog();flash();}}
+
+// ─── SUMMARY ──────────────────────────────────────────────────────────────────
+
+
+// ─── TABS ─────────────────────────────────────────────────────────────────────
+function switchTab(n){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('view-'+n).classList.add('active');
+  document.querySelectorAll('.tab')[{gantt:0,proj:1,log:2,fte:3,analytics:4}[n]].classList.add('active');
+  if(n==='log')renderLog();
+  if(n==='proj')renderProj();
+  if(n==='fte')renderFte();
+  if(n==='analytics')runAnalytics();
+  if(n==='gantt'){
+    // Re-sync filter button active states
+    [{id:'fAll',v:'all'},{id:'fGreen',v:'🟢'},{id:'fYellow',v:'🟡'},{id:'fRed',v:'🔴'},{id:'fWhite',v:'⚪'}].forEach(x=>{
+      const el=document.getElementById(x.id);
+      if(el) el.classList.toggle('active',x.v===CF);
+    });
+  }
+}
+
+// ─── CLASS PROJECTIONS ────────────────────────────────────────────────────────
+const PHASE_LABELS = { pst:'PST', nesting:'Nesting', bau:'Prod to BAU', '':'' };
+const PHASE_CYCLE  = ['', 'pst', 'nesting', 'bau'];
+
+let PROJ_DATES = [
+  '2/16','2/23','3/2','3/9','3/16','3/23','3/30',
+  '4/6','4/13','4/20','4/27','5/4','5/11','5/18','5/25',
+  '6/1','6/8','6/15','6/22','6/29',
+  '7/6','7/13','7/20','7/27',
+  '8/3','8/10','8/17','8/24','8/31',
+  '9/7','9/14','9/21','9/28',
+  '10/5','10/12','10/19','10/26',
+  '11/2','11/9','11/16','11/23','11/30',
+  '12/7','12/14','12/21','12/28'
+];
+
+function makePhases(spec) {
+  const arr = Array(PROJ_DATES.length).fill('');
+  spec.forEach(([s,e,p]) => { for(let i=s;i<=e;i++) arr[i]=p; });
+  return arr;
+}
+
+// Index reference:
+// 0=2/16  1=2/23  2=3/2   3=3/9   4=3/16  5=3/23  6=3/30
+// 7=4/6   8=4/13  9=4/20  10=4/27 11=5/4  12=5/11 13=5/18 14=5/25
+// 15=6/1  16=6/8  17=6/15 18=6/22 19=6/29
+// 20=7/6  21=7/13 22=7/20 23=7/27
+// 24=8/3  25=8/10 26=8/17 27=8/24 28=8/31
+// 29=9/7  30=9/14 31=9/21 32=9/28
+// 33=10/5 34=10/12 35=10/19 36=10/26
+// 37=11/2 38=11/9 39=11/16 40=11/23 41=11/30
+// 42=12/7 43=12/14 44=12/21 45=12/28
+
+let PROJ_ROWS = [
+  // Index ref: 0=2/16 1=2/23 2=3/2 3=3/9 4=3/16 5=3/23 6=3/30 7=4/6 8=4/13 9=4/20
+  // 10=4/27 11=5/4 12=5/11 13=5/18 14=5/25 15=6/1 16=6/8 17=6/15 18=6/22 19=6/29
+  // 20=7/6 21=7/13 22=7/20 23=7/27 24=8/3 25=8/10 26=8/17 27=8/24 28=8/31
+  // 29=9/7 30=9/14 31=9/21 32=9/28 33=10/5 34=10/12 35=10/19 36=10/26
+  // 37=11/2 38=11/9 39=11/16 40=11/23 41=11/30 42=12/7 43=12/14 44=12/21 45=12/28
+  { name:'MS Deployment Wave 1 (25HC)',                       site:'Cebu',  hold:false, phases: makePhases([[0,0,'pst'],[1,1,'nesting'],[2,14,'bau']]) },
+  { name:'MS Deployment Wave 2 (25 HC)',                      site:'Cebu',  hold:false, phases: makePhases([[1,1,'pst'],[2,2,'nesting'],[3,15,'bau']]) },
+  { name:'Wave 3 (30 HC) - Approved by Client',               site:'MNL',   hold:false, phases: makePhases([[3,3,'pst'],[4,4,'nesting'],[5,16,'bau']]) },
+  { name:'Wave 4 (30 HC) -- Approved by Client',              site:'MNL',   hold:false, phases: makePhases([[5,5,'pst'],[6,6,'nesting'],[7,19,'bau']]) },
+  { name:'Wave 5 (30 HC) - Approved by Client (HOLD)',        site:'CO',    hold:true,  phases: makePhases([[17,17,'pst'],[18,18,'nesting'],[19,28,'bau']]) },
+  { name:'Wave 6 (30 HC) - Approved by Client (HOLD)',        site:'MNL',   hold:true,  phases: makePhases([[18,18,'pst'],[19,19,'nesting'],[20,28,'bau']]) },
+  { name:'Wave 7 (30 HC) - For Approval',                     site:'Cebu',  hold:false, phases: makePhases([[21,21,'pst'],[22,22,'nesting'],[23,30,'bau']]) },
+  { name:'Wave 8 (30 HC) - For Approval',                     site:'MNL',   hold:false, phases: makePhases([[22,22,'pst'],[23,23,'nesting'],[24,32,'bau']]) },
+  { name:'Wave 9 (30 HC) - For Approval',                     site:'Cebu',  hold:false, phases: makePhases([[27,27,'pst'],[28,28,'nesting'],[29,36,'bau']]) },
+  { name:'Wave 10 (30 HC) - For Approval',                    site:'Cebu',  hold:false, phases: makePhases([[35,35,'pst'],[36,36,'nesting'],[37,45,'bau']]) },
+  { name:'Wave 11 (34 HC) - For Approval',                    site:'Cebu',  hold:false, phases: makePhases([[38,38,'pst'],[39,39,'nesting'],[40,45,'bau']]) },
+];
+
+// Column widths — first column wider to show full wave names
+let PROJ_COL_WIDTHS = [420, 80, ...Array(PROJ_DATES.length).fill(52), 30];
+
+// Row heights (px) — resizable
+let PROJ_ROW_HEIGHTS = Array(PROJ_ROWS.length).fill(38);
+
+function renderProj() {
+  if(!document.getElementById('projHead')) return;
+  document.getElementById('projHead').innerHTML = `<tr>
+    <th class="th-name" style="width:${PROJ_COL_WIDTHS[0]}px;min-width:260px;text-align:left;padding-left:12px;position:sticky;left:0;z-index:5;background:var(--smoke);">
+      ${document.getElementById('projTitle')?document.getElementById('projTitle').value:'Billable FTE / Headcount (HC)'}
+      <div class="col-resize-handle" onmousedown="startColResize(event,0)"></div>
+    </th>
+    <th style="width:${PROJ_COL_WIDTHS[1]}px;min-width:50px;position:relative;">
+      Site<div class="col-resize-handle" onmousedown="startColResize(event,1)"></div>
+    </th>
+    ${PROJ_DATES.map((d,i)=>`
+      <th style="width:${PROJ_COL_WIDTHS[i+2]}px;min-width:48px;position:relative;">
+        <span class="proj-date-label" onclick="editProjDate(${i},this)" title="Click to edit">${d}</span>
+        <div class="col-resize-handle" onmousedown="startColResize(event,${i+2})"></div>
+      </th>`).join('')}
+    <th style="width:30px;"></th>
+  </tr>`;
+
+  document.getElementById('projBody').innerHTML = PROJ_ROWS.map((row,ri)=>`
+    <tr class="${row.hold?'hold-row':''}" style="height:${PROJ_ROW_HEIGHTS[ri]||38}px;" id="prow_${ri}">
+      <td class="td-name" style="width:${PROJ_COL_WIDTHS[0]}px;position:sticky;left:0;z-index:3;background:#fff;">
+        <input class="name-edit" value="${row.name.replace(/"/g,'&quot;')}"
+          onchange="PROJ_ROWS[${ri}].name=this.value;flash();" title="Edit name"/>
+        <div class="row-resize-handle" onmousedown="startRowResize(event,${ri})"></div>
+      </td>
+      <td class="td-site" style="width:${PROJ_COL_WIDTHS[1]}px;">
+        <input class="site-edit" value="${row.site}" onchange="PROJ_ROWS[${ri}].site=this.value;flash();" title="Edit site"/>
+      </td>
+      ${row.phases.map((ph,ci)=>`
+        <td class="phase-cell phase-${ph||'empty'}" style="width:${PROJ_COL_WIDTHS[ci+2]}px;position:relative;" title="Click to set phase">
+          <select class="phase-select" onchange="setPhase(${ri},${ci},this.value)" onclick="event.stopPropagation()"
+            style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;z-index:2;">
+            <option value="" ${!ph?'selected':''}>—</option>
+            <option value="pst" ${ph==='pst'?'selected':''}>PST</option>
+            <option value="nesting" ${ph==='nesting'?'selected':''}>Nesting</option>
+            <option value="bau" ${ph==='bau'?'selected':''}>Prod to BAU</option>
+          </select>
+          <span style="position:relative;z-index:1;pointer-events:none;">${PHASE_LABELS[ph]||''}</span>
+        </td>`).join('')}
+      <td class="td-del" style="width:30px;">
+        <button class="rdel" onclick="delProjRow(${ri})">×</button>
+      </td>
+    </tr>`).join('');
+}
+
+// Edit date header
+function editProjDate(i, el) {
+  const v = PROJ_DATES[i];
+  const inp = document.createElement('input');
+  inp.value = v;
+  inp.style.cssText = 'width:52px;font-size:.6rem;font-family:Poppins,sans-serif;font-weight:700;border:1.5px solid #5B8B92;border-radius:4px;padding:1px 3px;outline:none;text-align:center;color:#282526;';
+  el.replaceWith(inp); inp.focus(); inp.select();
+  const commit = () => { PROJ_DATES[i] = inp.value.trim() || v; renderProj(); flash(); };
+  inp.onblur = commit;
+  inp.onkeydown = e => { if(e.key==='Enter') commit(); if(e.key==='Escape'){PROJ_DATES[i]=v;renderProj();} };
+}
+
+function cyclePhase(ri, ci) {
+  const cur = PROJ_ROWS[ri].phases[ci];
+  PROJ_ROWS[ri].phases[ci] = PHASE_CYCLE[(PHASE_CYCLE.indexOf(cur)+1) % PHASE_CYCLE.length];
+  flash(); renderProj();
+}
+function setPhase(ri, ci, val) {
+  PROJ_ROWS[ri].phases[ci] = val;
+  flash(); renderProj();
+}
+
+function addProjRow() {
+  PROJ_ROWS.push({ name:'New Wave', site:'—', hold:false, phases:Array(PROJ_DATES.length).fill('') });
+  PROJ_ROW_HEIGHTS.push(38);
+  flash(); renderProj();
+}
+
+function delProjRow(ri) {
+  if(confirm('Remove this row?')) { PROJ_ROWS.splice(ri,1); PROJ_ROW_HEIGHTS.splice(ri,1); flash(); renderProj(); }
+}
+
+// ── Column resize
+function startColResize(e, colIdx) {
+  e.preventDefault(); e.stopPropagation();
+  const startX = e.pageX;
+  const startW = PROJ_COL_WIDTHS[colIdx];
+  const move = e2 => {
+    PROJ_COL_WIDTHS[colIdx] = Math.max(colIdx<=1?50:48, startW + e2.pageX - startX);
+    // update all cells in this column live
+    const table = document.getElementById('projTable');
+    const rows = table.querySelectorAll('tr');
+    rows.forEach(row => {
+      const cells = row.children;
+      if(cells[colIdx]) cells[colIdx].style.width = PROJ_COL_WIDTHS[colIdx]+'px';
+    });
+  };
+  const up = () => { document.removeEventListener('mousemove',move); document.removeEventListener('mouseup',up); };
+  document.addEventListener('mousemove',move);
+  document.addEventListener('mouseup',up);
+}
+
+// ── Row resize
+function startRowResize(e, ri) {
+  e.preventDefault(); e.stopPropagation();
+  const startY = e.pageY;
+  const startH = PROJ_ROW_HEIGHTS[ri] || 38;
+  const move = e2 => {
+    PROJ_ROW_HEIGHTS[ri] = Math.max(28, startH + e2.pageY - startY);
+    const row = document.getElementById(`prow_${ri}`);
+    if(row) row.style.height = PROJ_ROW_HEIGHTS[ri]+'px';
+  };
+  const up = () => { document.removeEventListener('mousemove',move); document.removeEventListener('mouseup',up); };
+  document.addEventListener('mousemove',move);
+  document.addEventListener('mouseup',up);
+}
+
+// ─── NOTES PANEL ─────────────────────────────────────────────────────────────
+let _notesCi = null, _notesTi = null;
+
+function openNotes(ci, ti) {
+  _notesCi = ci; _notesTi = ti;
+  const task = CATS[ci].tasks[ti];
+  const cat  = CATS[ci];
+
+  if (!task.notes) task.notes = [];
+
+  document.getElementById('notesPanelTitle').textContent = task.name;
+  document.getElementById('notesPanelCat').textContent   = cat.name;
+
+  const due   = pd(task.due);
+  const start = pd(task.start);
+  document.getElementById('notesPanelMeta').innerHTML = `
+    <div class="notes-meta-item"><div class="notes-meta-label">Status</div><div class="notes-meta-val">${task.status||'—'}</div></div>
+    <div class="notes-meta-item"><div class="notes-meta-label">Current</div><div class="notes-meta-val">${task.current||'—'}</div></div>
+    <div class="notes-meta-item"><div class="notes-meta-label">To Be</div><div class="notes-meta-val">${task.to||'—'}</div></div>
+    <div class="notes-meta-item"><div class="notes-meta-label">Start</div><div class="notes-meta-val">${fd(start)}</div></div>
+    <div class="notes-meta-item"><div class="notes-meta-label">Due</div><div class="notes-meta-val" style="${due&&due<TODAY?'color:#c0392b;font-weight:700':''}">${fd(due)}</div></div>
+    ${task.dep?`<div class="notes-meta-item" style="grid-column:1/-1;"><div class="notes-meta-label">Dependencies</div><div class="notes-meta-val" style="color:#8B6185;font-style:italic;">${task.dep}</div></div>`:''}`;
+
+  document.getElementById('notesPanelDod').value = task.dod || '';
+
+  renderNoteEntries();
+
+  document.getElementById('notesPanel').classList.add('open');
+  document.getElementById('dimOverlay').classList.add('show');
+  document.getElementById('noteText').value = '';
+}
+
+function renderNoteEntries() {
+  if (_notesCi === null) return;
+  const task = CATS[_notesCi].tasks[_notesTi];
+  if (!task.notes) task.notes = [];
+  const typeMap = { note:'note', update:'update', blocker:'blocker' };
+  const labelMap = { note:'📝 Note', update:'✅ Update', blocker:'🚫 Blocker' };
+  const container = document.getElementById('notesEntries');
+  if (!task.notes.length) {
+    container.innerHTML = `<div style="font-size:.74rem;color:var(--muted);font-family:'Inter',sans-serif;padding:4px 0;">No entries yet. Add a note, update, or blocker below.</div>`;
+    return;
+  }
+  container.innerHTML = task.notes.map((n, idx) => `
+    <div class="note-entry">
+      <span class="note-entry-type note-type-${n.type}">${labelMap[n.type]||n.type}</span>
+      <div class="note-entry-text">${escHtml(n.text)}</div>
+      <div class="note-entry-date">${n.date}</div>
+      <button class="note-del" onclick="deleteNote(${idx})" title="Delete">×</button>
+    </div>`).join('');
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function submitNote() {
+  const text = document.getElementById('noteText').value.trim();
+  if (!text) return;
+  const type = document.getElementById('noteType').value;
+  const task = CATS[_notesCi].tasks[_notesTi];
+  if (!task.notes) task.notes = [];
+  task.notes.unshift({
+    type,
+    text,
+    date: new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'})
+  });
+  document.getElementById('noteText').value = '';
+  renderNoteEntries();
+  renderGantt(); // refresh badge count
+  // Re-open panel since renderGantt closes it
+  document.getElementById('notesPanel').classList.add('open');
+  document.getElementById('dimOverlay').classList.add('show');
+  flash();
+}
+
+function deleteNote(idx) {
+  CATS[_notesCi].tasks[_notesTi].notes.splice(idx, 1);
+  renderNoteEntries();
+  renderGantt();
+  document.getElementById('notesPanel').classList.add('open');
+  document.getElementById('dimOverlay').classList.add('show');
+}
+
+function saveDod() {
+  if (_notesCi === null) return;
+  CATS[_notesCi].tasks[_notesTi].dod = document.getElementById('notesPanelDod').value;
+  flash();
+}
+
+function refreshNotesMeta() {
+  if(_notesCi===null) return;
+  const task=CATS[_notesCi].tasks[_notesTi];
+  const due=pd(task.due), start=pd(task.start);
+  document.getElementById('notesPanelTitle').textContent=task.name;
+  document.getElementById('notesPanelMeta').innerHTML=`
+    <div class="notes-meta-item"><div class="notes-meta-label">Status</div><div class="notes-meta-val">${task.status||'—'}</div></div>
+    <div class="notes-meta-item"><div class="notes-meta-label">Current</div><div class="notes-meta-val">${task.current||'—'}</div></div>
+    <div class="notes-meta-item"><div class="notes-meta-label">To Be</div><div class="notes-meta-val">${task.to||'—'}</div></div>
+    <div class="notes-meta-item"><div class="notes-meta-label">Start</div><div class="notes-meta-val">${fd(start)}</div></div>
+    <div class="notes-meta-item"><div class="notes-meta-label">Due</div><div class="notes-meta-val" style="${due&&due<TODAY?'color:#c0392b;font-weight:700':''}">${fd(due)}</div></div>
+    ${task.dep?`<div class="notes-meta-item" style="grid-column:1/-1;"><div class="notes-meta-label">Dependencies</div><div class="notes-meta-val" style="color:#8B6185;font-style:italic;">${task.dep}</div></div>`:''}`;
+}
+
+function closeNotes() {
+  document.getElementById('notesPanel').classList.remove('open');
+  document.getElementById('dimOverlay').classList.remove('show');
+  _notesCi = null; _notesTi = null;
+}
+
+// Allow Ctrl+Enter to submit note
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeNotes();
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    if (document.getElementById('notesPanel').classList.contains('open')) submitNote();
+  }
+});
+
+// ─── 12-MONTH FTE FORECAST ────────────────────────────────────────────────────
+// Table 1 — Monthly (Overall FTE Requirement)
+let FTE_COLS = ['Billable','Buffer','Support','Overall','CEB','MNL','CO','CEB (75%)','MNL (75%)','CO (75%)'];
+let FTE_ROWS = [
+  {label:'Feb-2026', vals:['27','0','1','28','28','0','0','21','0','0']},
+  {label:'Mar-2026', vals:['110','16','17','143','67','76','0','50','57','0']},
+  {label:'Apr-2026', vals:['205','31','32','268','70','133','65','53','100','49']},
+  {label:'May-2026', vals:['235','36','39','310','112','133','65','84','100','49']},
+  {label:'Jun-2026', vals:['235','36','39','310','112','133','65','84','100','49']},
+  {label:'Jul-2026', vals:['275','42','46','363','112','186','65','84','140','49']},
+  {label:'Aug-2026', vals:['305','42','49','396','145','186','65','109','140','49']},
+  {label:'Sep-2026', vals:['305','42','49','396','145','186','65','109','140','49']},
+  {label:'Oct-2026', vals:['364','48','55','467','216','186','65','162','140','49']},
+  {label:'Nov-2026', vals:['364','48','55','467','216','186','65','162','140','49']},
+  {label:'Dec-2026', vals:['364','48','55','467','216','186','65','162','140','49']},
+];
+
+// Table 2 — Weekly breakdown
+let FTE_COLS2 = ['Billable','Buffer','Support','Overall'];
+let FTE_ROWS2 = [
+  {label:'2/16', vals:['27','0','1','28']},
+  {label:'2/23', vals:['27','0','1','28']},
+  {label:'3/2',  vals:['50','10','7','67']},
+  {label:'3/9',  vals:['50','10','7','67']},
+  {label:'3/16', vals:['90','10','13','113']},
+  {label:'3/23', vals:['90','10','13','113']},
+  {label:'3/30', vals:['110','16','17','143']},
+  {label:'4/6',  vals:['145','20','24','189']},
+  {label:'4/13', vals:['145','20','26','191']},
+  {label:'4/20', vals:['175','26','26','227']},
+  {label:'4/27', vals:['205','31','32','268']},
+  {label:'5/4',  vals:['235','36','39','310']},
+  {label:'5/11', vals:['235','36','39','310']},
+  {label:'5/18', vals:['235','36','39','310']},
+  {label:'5/25', vals:['235','36','39','310']},
+  {label:'6/1',  vals:['235','36','39','310']},
+  {label:'6/8',  vals:['235','36','39','310']},
+  {label:'6/15', vals:['275','42','46','363']},
+  {label:'6/22', vals:['275','42','46','363']},
+  {label:'6/29', vals:['275','42','46','363']},
+  {label:'7/6',  vals:['275','42','46','363']},
+  {label:'7/13', vals:['305','42','49','396']},
+  {label:'7/20', vals:['305','42','49','396']},
+  {label:'7/27', vals:['305','42','49','396']},
+  {label:'8/3',  vals:['305','42','49','396']},
+  {label:'8/10', vals:['305','42','49','396']},
+  {label:'8/17', vals:['305','42','49','396']},
+  {label:'8/24', vals:['305','42','49','396']},
+  {label:'8/31', vals:['364','48','55','467']},
+  {label:'9/7',  vals:['364','48','55','467']},
+  {label:'9/14', vals:['364','48','55','467']},
+  {label:'9/21', vals:['364','48','55','467']},
+  {label:'9/28', vals:['364','48','55','467']},
+  {label:'10/5', vals:['364','48','55','467']},
+  {label:'10/12',vals:['364','48','55','467']},
+  {label:'10/19',vals:['364','48','55','467']},
+  {label:'10/26',vals:['364','48','55','467']},
+  {label:'11/2', vals:['364','48','55','467']},
+  {label:'11/9', vals:['364','48','55','467']},
+  {label:'11/16',vals:['364','48','55','467']},
+  {label:'11/23',vals:['364','48','55','467']},
+  {label:'11/30',vals:['364','48','55','467']},
+  {label:'12/7', vals:['364','48','55','467']},
+  {label:'12/14',vals:['364','48','55','467']},
+  {label:'12/21',vals:['364','48','55','467']},
+  {label:'12/28',vals:['364','48','55','467']},
+];
+
+function fteColTotal(ci){
+  return FTE_ROWS.reduce((sum,r)=>{const v=parseFloat(r.vals[ci]);return sum+(isNaN(v)?0:v);},0);
+}
+function fteRowTotal(ri){
+  return FTE_ROWS[ri].vals.reduce((sum,v)=>{const n=parseFloat(v);return sum+(isNaN(n)?0:n);},0);
+}
+function fteColTotal2(ci){
+  return FTE_ROWS2.reduce((sum,r)=>{const v=parseFloat(r.vals[ci]);return sum+(isNaN(v)?0:v);},0);
+}
+
+// ── Excel Paste Handler ──
+// When you copy cells from Excel and paste anywhere in the FTE table,
+// it fills starting from the focused cell automatically.
+function handleFtePaste(e){
+  const active = document.activeElement;
+  if(!active || !active.classList.contains('fte-input')) return;
+
+  e.preventDefault();
+  const text = (e.clipboardData||window.clipboardData).getData('text');
+  if(!text) return;
+
+  // Parse Excel clipboard — rows separated by \n, cols by \t
+  const pastedRows = text.trim().split(/\r?\n/).map(r=>r.split('\t'));
+
+  // Determine which table and starting cell
+  const tableEl = active.closest('table');
+  const allTables = document.querySelectorAll('.fte-table');
+  const tableIdx = Array.from(allTables).indexOf(tableEl) + 1; // 1 or 2
+  const rows = tableIdx===1 ? FTE_ROWS : FTE_ROWS2;
+  const cols = tableIdx===1 ? FTE_COLS : FTE_COLS2;
+
+  // Find row/col index of focused input
+  const allInputs = tableEl.querySelectorAll('tbody tr');
+  let startRi=-1, startCi=-1;
+  outer: for(let ri=0;ri<allInputs.length-1;ri++){ // -1 to skip totals row
+    const inputs=allInputs[ri].querySelectorAll('input.fte-input');
+    for(let ci=0;ci<inputs.length;ci++){
+      if(inputs[ci]===active){startRi=ri;startCi=ci;break outer;}
+    }
+  }
+  if(startRi<0||startCi<0) return;
+
+  // Fill cells
+  pastedRows.forEach((pastedRow, dri)=>{
+    const ri=startRi+dri;
+    if(ri>=rows.length) return;
+    pastedRow.forEach((val,dci)=>{
+      const ci=startCi+dci;
+      if(ci>=cols.length) return;
+      rows[ri].vals[ci]=val.trim();
+    });
+  });
+
+  renderFte();
+  flash();
+
+  // Re-focus on start cell after render
+  setTimeout(()=>focusFteCell(startRi,startCi,tableIdx),50);
+}
+
+// ─── FTE CELL RANGE SELECTION ─────────────────────────────────────────────────
+let _fteSelStart = null;
+let _fteSelEnd   = null;
+let _fteSelTable = null;
+let _fteIsSelecting = false;
+
+function initFteSelection() {
+  document.addEventListener('mousedown', e => {
+    const td = e.target.closest('td.fte-cell');
+    if (!td) { clearFteSelection(); return; }
+    const tbl = td.closest('table');
+    const allTables = document.querySelectorAll('.fte-table');
+    _fteSelTable = Array.from(allTables).indexOf(tbl) + 1;
+    _fteSelStart = getFteCellIdx(td, _fteSelTable);
+    _fteSelEnd   = { ..._fteSelStart };
+    _fteIsSelecting = true;
+    document.body.classList.add('fte-selecting');
+    highlightFteSelection();
+  });
+
+  document.addEventListener('mouseover', e => {
+    if (!_fteIsSelecting) return;
+    const td = e.target.closest('td.fte-cell');
+    if (!td) return;
+    _fteSelEnd = getFteCellIdx(td, _fteSelTable);
+    highlightFteSelection();
+  });
+
+  document.addEventListener('mouseup', () => {
+    _fteIsSelecting = false;
+    document.body.classList.remove('fte-selecting');
+  });
+}
+
+function getFteCellIdx(td, table) {
+  const rows = table === 1 ? FTE_ROWS : FTE_ROWS2;
+  const tbl = document.querySelectorAll('.fte-table')[table - 1];
+  const allTrs = Array.from(tbl.querySelectorAll('tbody tr')).slice(0, rows.length);
+  for (let ri = 0; ri < allTrs.length; ri++) {
+    const cells = Array.from(allTrs[ri].querySelectorAll('td.fte-cell'));
+    for (let ci = 0; ci < cells.length; ci++) {
+      if (cells[ci] === td) return { ri, ci };
+    }
+  }
+  return { ri: 0, ci: 0 };
+}
+
+function highlightFteSelection() {
+  // Clear all
+  document.querySelectorAll('td.fte-cell.selected').forEach(c => c.classList.remove('selected'));
+  if (!_fteSelStart || !_fteSelEnd || !_fteSelTable) return;
+  const minRi = Math.min(_fteSelStart.ri, _fteSelEnd.ri);
+  const maxRi = Math.max(_fteSelStart.ri, _fteSelEnd.ri);
+  const minCi = Math.min(_fteSelStart.ci, _fteSelEnd.ci);
+  const maxCi = Math.max(_fteSelStart.ci, _fteSelEnd.ci);
+  const rows = _fteSelTable === 1 ? FTE_ROWS : FTE_ROWS2;
+  const tbl = document.querySelectorAll('.fte-table')[_fteSelTable - 1];
+  if (!tbl) return;
+  const allTrs = Array.from(tbl.querySelectorAll('tbody tr')).slice(0, rows.length);
+  for (let ri = minRi; ri <= maxRi; ri++) {
+    if (!allTrs[ri]) continue;
+    const cells = Array.from(allTrs[ri].querySelectorAll('td.fte-cell'));
+    for (let ci = minCi; ci <= maxCi; ci++) {
+      if (cells[ci]) cells[ci].classList.add('selected');
+    }
+  }
+}
+
+function clearFteSelection() {
+  document.querySelectorAll('td.fte-cell.selected').forEach(c => c.classList.remove('selected'));
+  _fteSelStart = null; _fteSelEnd = null; _fteSelTable = null;
+}
+
+// Copy selected range as TSV (Tab-Separated) — paste into Excel!
+document.addEventListener('copy', e => {
+  const selected = document.querySelectorAll('td.fte-cell.selected');
+  if (selected.length === 0) return;
+  if (!_fteSelStart || !_fteSelEnd) return;
+  e.preventDefault();
+  const minRi = Math.min(_fteSelStart.ri, _fteSelEnd.ri);
+  const maxRi = Math.max(_fteSelStart.ri, _fteSelEnd.ri);
+  const minCi = Math.min(_fteSelStart.ci, _fteSelEnd.ci);
+  const maxCi = Math.max(_fteSelStart.ci, _fteSelEnd.ci);
+  const rows = _fteSelTable === 1 ? FTE_ROWS : FTE_ROWS2;
+  const tsv = [];
+  for (let ri = minRi; ri <= maxRi; ri++) {
+    const row = [];
+    for (let ci = minCi; ci <= maxCi; ci++) {
+      row.push(rows[ri]?.vals[ci] ?? '');
+    }
+    tsv.push(row.join('\t'));
+  }
+  e.clipboardData.setData('text/plain', tsv.join('\n'));
+});
+
+// Paste into selected range
+document.addEventListener('paste', e => {
+  const selected = document.querySelectorAll('td.fte-cell.selected');
+  if (selected.length === 0 || !_fteSelStart) return;
+  const active = document.activeElement;
+  if (active && ['INPUT','TEXTAREA'].includes(active.tagName)) return; // let cell-level paste handle
+  e.preventDefault();
+  const text = (e.clipboardData || window.clipboardData).getData('text');
+  if (!text) return;
+  pushHistory();
+  const pastedRows = text.trim().split(/\r?\n/).map(r => r.split('\t'));
+  const rows = _fteSelTable === 1 ? FTE_ROWS : FTE_ROWS2;
+  const cols = _fteSelTable === 1 ? FTE_COLS : FTE_COLS2;
+  const startRi = Math.min(_fteSelStart.ri, _fteSelEnd.ri);
+  const startCi = Math.min(_fteSelStart.ci, _fteSelEnd.ci);
+  pastedRows.forEach((pastedRow, dri) => {
+    const ri = startRi + dri;
+    if (ri >= rows.length) return;
+    pastedRow.forEach((val, dci) => {
+      const ci = startCi + dci;
+      if (ci >= cols.length) return;
+      rows[ri].vals[ci] = val.trim();
+    });
+  });
+  renderFte(); flash();
+});
+
+// Initialise selection after DOM ready
+document.addEventListener('DOMContentLoaded', initFteSelection);
+setTimeout(initFteSelection, 500);
+
+// ─── UNDO / REDO ──────────────────────────────────────────────────────────────
+const HISTORY = [];
+const REDO_STACK = [];
+const MAX_HISTORY = 50;
+let _undoTimer = null;
+
+function snapshot() {
+  return JSON.stringify({
+    cats: CATS, log: LOG,
+    projRows: PROJ_ROWS, projDates: PROJ_DATES,
+    fteRows: FTE_ROWS, fteCols: FTE_COLS,
+    fteRows2: FTE_ROWS2, fteCols2: FTE_COLS2
+  });
+}
+
+function pushHistory() {
+  HISTORY.push(snapshot());
+  if (HISTORY.length > MAX_HISTORY) HISTORY.shift();
+  REDO_STACK.length = 0;
+  updateUndoBar();
+}
+
+function doUndo() {
+  if (HISTORY.length === 0) return;
+  REDO_STACK.push(snapshot());
+  const prev = HISTORY.pop();
+  applySnapshot(JSON.parse(prev));
+  updateUndoBar('Undo successful');
+}
+
+function doRedo() {
+  if (REDO_STACK.length === 0) return;
+  HISTORY.push(snapshot());
+  const next = REDO_STACK.pop();
+  applySnapshot(JSON.parse(next));
+  updateUndoBar('Redo successful');
+}
+
+function applySnapshot(data) {
+  if (data.cats)      { CATS.length=0;      data.cats.forEach(c=>CATS.push(c)); }
+  if (data.log)       { LOG.length=0;        data.log.forEach(l=>LOG.push(l)); }
+  if (data.projRows)  { PROJ_ROWS.length=0;  data.projRows.forEach(r=>PROJ_ROWS.push(r)); }
+  if (data.projDates) { PROJ_DATES.length=0; data.projDates.forEach(d=>PROJ_DATES.push(d)); }
+  if (data.fteRows)   { FTE_ROWS.length=0;   data.fteRows.forEach(r=>FTE_ROWS.push(r)); }
+  if (data.fteCols)   { FTE_COLS.length=0;   data.fteCols.forEach(c=>FTE_COLS.push(c)); }
+  if (data.fteRows2)  { FTE_ROWS2.length=0;  data.fteRows2.forEach(r=>FTE_ROWS2.push(r)); }
+  if (data.fteCols2)  { FTE_COLS2.length=0;  data.fteCols2.forEach(c=>FTE_COLS2.push(c)); }
+  renderGantt(); renderLog(); renderProj(); renderFte();
+  if (typeof window.saveToFirebase === 'function') window.saveToFirebase();
+}
+
+function updateUndoBar(msg) {
+  const bar = document.getElementById('undoBar');
+  const msgEl = document.getElementById('undoMsg');
+  const undoBtn = document.getElementById('undoBtn');
+  const redoBtn = document.getElementById('redoBtn');
+  if (msgEl) msgEl.textContent = msg || HISTORY.length + ' change' + (HISTORY.length!==1?'s':'');
+  if (undoBtn) undoBtn.disabled = HISTORY.length === 0;
+  if (redoBtn) redoBtn.disabled = REDO_STACK.length === 0;
+  if (bar) {
+    bar.classList.add('show');
+    clearTimeout(_undoTimer);
+    _undoTimer = setTimeout(() => bar.classList.remove('show'), 3000);
+  }
+}
+
+document.addEventListener('keydown', function(e) {
+  var isInput = document.activeElement && ['INPUT','TEXTAREA'].includes(document.activeElement.tagName);
+  if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+    if (!isInput) { e.preventDefault(); doUndo(); }
+  }
+  if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+    if (!isInput) { e.preventDefault(); doRedo(); }
+  }
+});
+
+function renderFte(){
+  // Target the stable wrapper div, not the table itself
+  const container = document.getElementById('fteContainer');
+  if(!container) return;
+
+  // ── TABLE 1: Monthly
+  const t1head = `<tr>
+    <th class="row-header" rowspan="2" style="background:#1D4B3B;color:#fff;vertical-align:middle;">MONTHS</th>
+    <th colspan="4" style="background:#1D4B3B;color:#fff;text-align:center;">OVERALL FTE Requirement</th>
+    <th colspan="3" style="background:#1D4B3B;color:#fff;text-align:center;">Overall FTE Requirement Per Location</th>
+    <th colspan="3" style="background:#2a5c4a;color:#fff;text-align:center;">Assumes 75% Scheduled At Peak</th>
+    <th style="background:#1D4B3B;color:#fff;width:30px;"></th>
+  </tr>
+  <tr>
+    ${['Billable','Buffer','Support','Overall','CEB','MNL','CO','CEB','MNL','CO'].map(c=>`<th>${c}</th>`).join('')}
+    <th></th>
+  </tr>`;
+
+  const t1body = [
+    ...FTE_ROWS.map((row,ri)=>`<tr>
+      <td class="row-label" style="font-weight:700;background:#f0f0ee;">
+        <input class="fte-label-input" value="${row.label.replace(/"/g,'&quot;')}"
+          onchange="FTE_ROWS[${ri}].label=this.value;flash();"
+          onpaste="handleFtePaste(event,${ri},-1,1)"/>
+      </td>
+      ${row.vals.map((v,ci)=>`<td class="fte-cell ${ci===3||ci===6||ci===9?'total-cell':''}">
+        <input class="fte-input" value="${v}"
+          data-ri="${ri}" data-ci="${ci}" data-table="1"
+          onchange="FTE_ROWS[${ri}].vals[${ci}]=this.value;flash();"
+          onkeydown="fteMoveCell(event,${ri},${ci},1)"
+          onpaste="handleFtePaste(event,${ri},${ci},1)"/>
+      </td>`).join('')}
+      <td style="text-align:center;padding:0;"><button class="fte-del" onclick="delFteRow(${ri})">×</button></td>
+    </tr>`),
+    `<tr class="total-row">
+      <td class="row-label" style="padding-left:14px;font-weight:700;">TOTAL</td>
+      ${FTE_COLS.map((_,ci)=>`<td class="total-cell">${fteColTotal(ci)||'—'}</td>`).join('')}
+      <td></td>
+    </tr>`
+  ].join('');
+
+  // ── TABLE 2: Weekly
+  const t2head = `<tr>
+    <th class="row-header" rowspan="2" style="background:#5B8B92;color:#fff;vertical-align:middle;">WEEK</th>
+    <th colspan="${FTE_COLS2.length}" style="background:#5B8B92;color:#fff;text-align:center;">OVERALL FTE Requirement</th>
+    <th style="background:#5B8B92;width:30px;"></th>
+  </tr>
+  <tr>${FTE_COLS2.map(c=>`<th>${c}</th>`).join('')}<th></th></tr>`;
+
+  const t2body = [
+    ...FTE_ROWS2.map((row,ri)=>`<tr>
+      <td class="row-label" style="background:#f0f0ee;font-weight:600;">
+        <input class="fte-label-input" value="${row.label.replace(/"/g,'&quot;')}" onchange="FTE_ROWS2[${ri}].label=this.value;flash();"/>
+      </td>
+      ${row.vals.map((v,ci)=>`<td class="fte-cell ${ci===3?'total-cell':''}">
+        <input class="fte-input" value="${v}"
+          data-ri="${ri}" data-ci="${ci}" data-table="2"
+          onchange="FTE_ROWS2[${ri}].vals[${ci}]=this.value;flash();"
+          onkeydown="fteMoveCell(event,${ri},${ci},2)"
+          onpaste="handleFtePaste(event,${ri},${ci},2)"/>
+      </td>`).join('')}
+      <td style="text-align:center;padding:0;"><button class="fte-del" onclick="delFteRow2(${ri})">×</button></td>
+    </tr>`),
+    `<tr class="total-row">
+      <td class="row-label" style="padding-left:14px;font-weight:700;">TOTAL</td>
+      ${FTE_COLS2.map((_,ci)=>`<td class="total-cell">${fteColTotal2(ci)||'—'}</td>`).join('')}
+      <td></td>
+    </tr>`
+  ].join('');
+
+  container.innerHTML = `
+    <div style="margin-bottom:28px;overflow-x:auto;">
+      <p class="section-title" style="margin-bottom:10px;">Monthly FTE Forecast (Feb–Dec 2026)</p>
+      <table class="fte-table">
+        <thead>${t1head}</thead>
+        <tbody>${t1body}</tbody>
+      </table>
+    </div>
+    <div style="overflow-x:auto;">
+      <p class="section-title" style="margin-bottom:10px;">Weekly FTE Breakdown</p>
+      <table class="fte-table">
+        <thead>${t2head}</thead>
+        <tbody>${t2body}</tbody>
+      </table>
+    </div>`;
+}
+
+// ── Excel-style paste handler
+function handleFtePaste(e, startRi, startCi, table) {
+  const text = (e.clipboardData || window.clipboardData).getData('text');
+  if (!text) return;
+
+  // Check if it's a multi-cell paste (contains tabs or newlines)
+  if (!text.includes('\t') && !text.includes('\n')) return; // single cell — let default handle it
+
+  e.preventDefault();
+
+  const rows = table === 1 ? FTE_ROWS : FTE_ROWS2;
+  const cols = table === 1 ? FTE_COLS : FTE_COLS2;
+
+  // Parse Excel clipboard — rows separated by \n, cells by \t
+  const pasteRows = text.trim().split(/\r?\n/).map(r => r.split('\t'));
+
+  let changed = false;
+  pasteRows.forEach((pasteRow, dr) => {
+    const ri = startRi + dr;
+
+    // Auto-add rows if paste goes beyond existing rows
+    while (ri >= rows.length) {
+      rows.push({ label: '', vals: Array(cols.length).fill('') });
+    }
+
+    pasteRow.forEach((val, dc) => {
+      const ci = startCi + dc;
+      if (ci === -1) {
+        // Pasting into label column
+        rows[ri].label = val.trim();
+      } else if (ci >= 0 && ci < cols.length) {
+        rows[ri].vals[ci] = val.trim();
+      }
+      changed = true;
+    });
+  });
+
+  if (changed) {
+    renderFte();
+    flash();
+    // Show paste confirmation
+    const b = document.getElementById('saveBanner');
+    b.textContent = `✓ Pasted ${pasteRows.length} row${pasteRows.length > 1 ? 's' : ''} × ${pasteRows[0].length} col${pasteRows[0].length > 1 ? 's' : ''}`;
+    b.style.background = 'var(--forest)';
+    b.classList.add('show');
+    clearTimeout(window._syncSt);
+    window._syncSt = setTimeout(() => b.classList.remove('show'), 2500);
+  }
+}
+
+function fteMoveCell(e,ri,ci,table){
+  const rows=table===1?FTE_ROWS:FTE_ROWS2;
+  const cols=table===1?FTE_COLS:FTE_COLS2;
+  if(e.key==='Tab'||e.key==='ArrowRight'){e.preventDefault();focusFteCell(ri,ci+1,table);}
+  if(e.key==='ArrowLeft'){e.preventDefault();focusFteCell(ri,ci-1,table);}
+  if(e.key==='ArrowDown'||e.key==='Enter'){e.preventDefault();focusFteCell(ri+1,ci,table);}
+  if(e.key==='ArrowUp'){e.preventDefault();focusFteCell(ri-1,ci,table);}
+}
+function focusFteCell(ri,ci,table){
+  if(ri<0||ci<0) return;
+  const rows=table===1?FTE_ROWS:FTE_ROWS2;
+  const cols=table===1?FTE_COLS:FTE_COLS2;
+  if(ri>=rows.length||ci>=cols.length) return;
+  const tables=document.querySelectorAll('.fte-table');
+  const tbl=tables[table-1];
+  if(!tbl) return;
+  const trs=tbl.querySelectorAll('tbody tr');
+  if(!trs[ri]) return;
+  const inputs=trs[ri].querySelectorAll('input.fte-input');
+  if(inputs[ci]) inputs[ci].focus();
+}
+function addFteRow(){
+  FTE_ROWS.push({label:'New Month',vals:Array(FTE_COLS.length).fill('')});
+  renderFte();flash();
+}
+function addFteRow2(){
+  FTE_ROWS2.push({label:'New Week',vals:Array(FTE_COLS2.length).fill('')});
+  renderFte();flash();
+}
+function addFteCol(){
+  const name=prompt('Column name:','New Col');
+  if(!name) return;
+  FTE_COLS.push(name);
+  FTE_ROWS.forEach(r=>r.vals.push(''));
+  renderFte();flash();
+}
+function delFteRow(ri){
+  if(confirm('Remove this row?')){FTE_ROWS.splice(ri,1);renderFte();flash();}
+}
+function delFteRow2(ri){
+  if(confirm('Remove this row?')){FTE_ROWS2.splice(ri,1);renderFte();flash();}
+}
+
+// ─── SMART ANALYTICS ──────────────────────────────────────────────────────────
+function runAnalytics(){
+  const out=document.getElementById('analyticsOutput');
+  const hero=document.getElementById('analyticsHero');
+  out.innerHTML='<div class="analytics-loading">🔍 Generating executive analysis…</div>';
+  if(hero) hero.style.display='none';
+
+  setTimeout(()=>{
+    const all=CATS.flatMap(c=>c.tasks);
+    const total=all.length;
+    const completed=all.filter(t=>t.status==='🟢');
+    const onTrack=all.filter(t=>t.status==='🟡');
+    const delayed=all.filter(t=>t.status==='🔴');
+    const notStarted=all.filter(t=>(t.status||'⚪')==='⚪');
+
+    // ── Start-date aware segmentation ──
+    // "Active" = start date has passed or no start date set (should have begun by now)
+    // "Future" = start date is clearly in the future (not yet due to begin)
+    const activeTasks = all.filter(t=>{
+      const s=pd(t.start);
+      return !s || s<=TODAY; // no start date, or start date already passed
+    });
+    const futureTasks = all.filter(t=>{
+      const s=pd(t.start);
+      return s && s>TODAY; // start date is still in the future
+    });
+    const activeTotal = activeTasks.length;
+    const activeDone = activeTasks.filter(t=>t.status==='🟢').length;
+    const activeOnTrack = activeTasks.filter(t=>t.status==='🟡').length;
+    const activeDelayed = activeTasks.filter(t=>t.status==='🔴').length;
+    const activeNotStarted = activeTasks.filter(t=>(t.status||'⚪')==='⚪').length;
+    // Among active tasks, "Not Started" ones are a real concern
+    const activeNotStartedProblem = activeTasks.filter(t=>(t.status||'⚪')==='⚪');
+
+    const overdue=all.filter(t=>{const d=pd(t.due);return d&&d<TODAY&&t.status!=='🟢';});
+    const dueSoon=all.filter(t=>{const d=pd(t.due);return d&&d>=TODAY&&(d-TODAY)/86400000<=14&&t.status!=='🟢';});
+    const noDate=all.filter(t=>!t.due);
+    const noDod=all.filter(t=>!t.dod||t.dod.trim()==='');
+    const noOwner=all.filter(t=>(!t.current||t.current==='—')&&(!t.to||t.to==='—'));
+
+    // Health % is based only on ACTIVE tasks (those that should have started)
+    const pctDone=activeTotal?Math.round((activeDone/activeTotal)*100):0;
+
+    const catBreakdown=CATS.map(cat=>{
+      const tasks=cat.tasks;
+      const done=tasks.filter(t=>t.status==='🟢').length;
+      const risk=tasks.filter(t=>t.status==='🔴').length;
+      const ns=tasks.filter(t=>(t.status||'⚪')==='⚪').length;
+      const ov=tasks.filter(t=>{const d=pd(t.due);return d&&d<TODAY&&t.status!=='🟢';}).length;
+      // Active tasks in this category
+      const activeCat=tasks.filter(t=>{const s=pd(t.start);return !s||s<=TODAY;});
+      const activeDoneCat=activeCat.filter(t=>t.status==='🟢').length;
+      return {
+        name:cat.name,color:cat.color,
+        total:tasks.length,done,risk,ns,ov,
+        activeTotal:activeCat.length,activeDone:activeDoneCat,
+        futureTasks:tasks.length-activeCat.length,
+        pct:activeCat.length?Math.round((activeDoneCat/activeCat.length)*100):0
+      };
+    });
+    const bestCat=catBreakdown.filter(c=>c.activeTotal>0).reduce((a,b)=>b.pct>a.pct?b:a,{pct:-1,name:'—',done:0,total:0,activeTotal:0});
+    const worstCat=catBreakdown.filter(c=>c.activeTotal>0).reduce((a,b)=>b.pct<a.pct?b:a,{pct:101,name:'—',done:0,total:0,ns:0,ov:0,risk:0,activeTotal:0});
+    const logHigh=LOG.filter(l=>l.priority==='High'&&l.status!=='Completed');
+    const logOverdue=LOG.filter(l=>{const d=pd(l.due);return d&&d<TODAY&&l.status!=='Completed';});
+    const logNoOwner=LOG.filter(l=>(!l.fo||l.fo==='—')&&(!l.bo||l.bo==='—'));
+    const overallFteCol=FTE_COLS.indexOf('Overall');
+    const peakOverall=overallFteCol>=0?Math.max(...FTE_ROWS.map(r=>parseFloat(r.vals[overallFteCol])||0)):0;
+    const fteTotals=FTE_COLS.map((_,ci)=>fteColTotal(ci));
+    const maxMonth=FTE_COLS[fteTotals.indexOf(Math.max(...fteTotals))];
+    const healthType=pctDone>=70?'good':pctDone>=40?'warn':'danger';
+    const totalRisk=overdue.length+delayed.length+logOverdue.length;
+
+    // ── HERO STATS BAR
+    if(hero){
+      hero.style.display='grid';
+      hero.innerHTML=[
+        {val:activeTotal+' / '+total,label:'Active / Total Tasks',sub:futureTasks.length+' tasks not yet scheduled to start',type:''},
+        {val:pctDone+'%',label:'Completion Rate',sub:'of active tasks done ('+activeDone+'/'+activeTotal+')',type:pctDone>=70?'good':pctDone>=40?'warn':'danger'},
+        {val:overdue.length,label:'Overdue',sub:'need immediate action',type:overdue.length>0?'danger':'good'},
+        {val:dueSoon.length,label:'Due in 14 days',sub:'coming up soon',type:dueSoon.length>0?'warn':'good'},
+        {val:delayed.length,label:'Delayed 🔴',sub:'marked as behind',type:delayed.length>0?'danger':'good'},
+        {val:LOG.length,label:'Action Items',sub:logHigh.length+' high priority open',type:logHigh.length>0?'warn':''},
+        {val:peakOverall||'—',label:'Peak FTE',sub:'in '+maxMonth,type:'info'},
+      ].map(s=>`<div class="analytics-hero-stat">
+        <div class="analytics-hero-val ${s.type}">${s.val}</div>
+        <div class="analytics-hero-label">${s.label}</div>
+        <div class="analytics-hero-sub">${s.sub}</div>
+      </div>`).join('');
+    }
+
+    // ── BUILD INSIGHTS WITH DETAILED EXPLANATIONS
+    const insights=[];
+
+    // 1. Overall Health — start-date aware
+    const velocityMsg = activeDone===0
+      ? 'No active tasks have been marked complete yet. This could mean status fields need updating — if work is genuinely underway, ensure owners are reflecting current progress in the Gantt.'
+      : pctDone<30
+        ? 'Completion rate among active tasks is below 30%. If the project timeline is fixed, the pace needs to accelerate. Consider reviewing blockers and re-prioritizing tasks with the nearest due dates.'
+        : pctDone<60
+          ? 'Moderate progress on active tasks. Roughly '+Math.round(100-pctDone)+'% of work that should have started remains incomplete. Sustained focus is needed as deadlines approach.'
+          : 'Strong completion rate on active tasks. The team is maintaining good momentum across the workstreams that have already kicked off.';
+
+    const futureNote = futureTasks.length>0
+      ? '<br><br><strong>Note on future tasks:</strong> <strong>'+futureTasks.length+' task'+(futureTasks.length>1?'s are':' is')+'</strong> excluded from this health score because their start dates are still in the future — they are not yet expected to have begun. This is by design. The health score only measures tasks that <em>should</em> be in progress today.'
+        +' <span style="color:var(--muted);font-size:.72rem;">Future tasks: '+all.filter(t=>{const s=pd(t.start);return s&&s>TODAY;}).map(t=>t.name).slice(0,4).join(', ')+(futureTasks.length>4?' and '+(futureTasks.length-4)+' more':'')+'.</span>'
+      : '';
+
+    const notStartedNote = activeNotStartedProblem.length>0
+      ? '<br><br><strong>⚠ Active tasks not yet started ('+activeNotStartedProblem.length+'):</strong> These tasks should have started by now based on their start dates, but are still marked "Not Started." This is worth investigating — are these genuinely not started, or do the statuses just need updating?<ul>'+activeNotStartedProblem.slice(0,5).map(t=>'<li><strong>'+t.name+'</strong> — started '+fd(pd(t.start))+(t.to?' · Owner: '+t.to:'')+'</li>').join('')+(activeNotStartedProblem.length>5?'<li style="color:var(--muted)">…and '+(activeNotStartedProblem.length-5)+' more</li>':'')+'</ul>'
+      : '';
+
+    insights.push({type:healthType,icon:'📊',title:'Overall Project Health',
+      action:'Hold a weekly project review covering: status of all 🔴 and 🟡 active tasks, blockers, and owner accountability. Remind owners to update statuses before each review so the analytics reflect reality.',
+      body:`<strong>${pctDone}%</strong> of <strong>${activeTotal} active tasks</strong> are complete (${activeDone} done · ${activeOnTrack} on track 🟡 · ${activeDelayed} delayed 🔴 · ${activeNotStarted} not started ⚪).
+      ${futureTasks.length>0?'<br><span style="color:var(--muted);font-size:.72rem;">'+futureTasks.length+' additional tasks are scheduled to start in the future and are not included in this score.</span>':''}
+      <br><br><strong>Why this matters:</strong> The health score is calculated only against tasks that are currently active — meaning their start date has already passed. Tasks with future start dates are intentionally excluded because measuring them as "incomplete" would unfairly penalise the project for work that isn't supposed to have begun yet. This gives you a realistic view of where the team stands today.<br><br>
+      ${velocityMsg}${futureNote}${notStartedNote}
+      <div style="margin-top:16px;"><strong>Progress by Active Tasks per Workstream:</strong><div style="margin-top:8px;">
+        ${catBreakdown.filter(c=>c.total>0).map(cat=>{
+          const pd2=Math.round(cat.activeTotal?((cat.activeDone/cat.activeTotal)*100):0);
+          const activePct=cat.activeTotal?Math.round((cat.activeDone/cat.activeTotal)*100):0;
+          const activeTrack=cat.activeTotal-cat.activeDone-(cat.risk||0);
+          const pt=Math.max(0,Math.round((activeTrack/cat.activeTotal)*100));
+          const pl=Math.round(((cat.risk||0)/cat.activeTotal)*100);
+          const pn=Math.max(0,100-pd2-pt-pl);
+          const futureLabel=cat.futureTasks>0?' <span style="color:var(--timberwolf);font-size:.62rem;">(+'+cat.futureTasks+' future)</span>':'';
+          return '<div class="workstream-progress-row"><div class="workstream-progress-name">'+cat.name+futureLabel+'</div><div class="workstream-progress-bar">'+(cat.activeTotal?'<div style="width:'+pd2+'%;background:#1e8449;height:100%;"></div><div style="width:'+pt+'%;background:#d35400;height:100%;"></div><div style="width:'+pl+'%;background:#c0392b;height:100%;"></div><div style="width:'+pn+'%;background:#C7C5C4;height:100%;"></div>':'<div style="width:100%;background:#f0f0ee;height:100%;border-radius:4px;"></div>')+'</div><div class="workstream-progress-pct">'+(cat.activeTotal?activePct+'%':'—')+'</div></div>';
+        }).join('')}
+      </div><div style="margin-top:8px;font-size:.63rem;color:var(--timberwolf);font-family:Inter,sans-serif;">🟢 Completed &nbsp;🟠 On Track &nbsp;🔴 Delayed &nbsp;⬜ Not Started (active) &nbsp;+N future = tasks not yet due to start</div></div>`});
+
+    // 2. Overdue
+    if(overdue.length>0){
+      const overdueImpact = overdue.length>=5
+        ? 'With <strong>'+overdue.length+' tasks overdue</strong>, this is now a project-level risk. Overdue items often have a cascading effect — tasks that depend on these deliverables cannot start or complete, creating a backlog that compounds over time.'
+        : 'Each overdue item represents a commitment that has not been honoured. While '+overdue.length+' item'+(overdue.length>1?'s are':' is')+' manageable, it signals that timelines may need to be re-baselined or resources re-allocated.';
+      insights.push({type:'danger',icon:'🚨',title:overdue.length+' Overdue Deliverable'+(overdue.length>1?'s':''),
+        action:'Within 24 hours: contact each task owner directly, confirm current status, and either (a) mark complete if done, (b) reset the due date with a committed new deadline, or (c) escalate if blocked.',
+        body:overdueImpact+'<br><br><strong>Overdue tasks:</strong><ul>'+overdue.slice(0,8).map(t=>'<li><strong>'+t.name+'</strong> — was due <strong>'+fd(pd(t.due))+'</strong> · Owner: '+(t.to||'Unassigned')+' · Status: '+(t.status||'—')+'</li>').join('')+(overdue.length>8?'<li style="color:var(--muted)">…and '+(overdue.length-8)+' more</li>':'')+'</ul>'});
+    } else {
+      insights.push({type:'good',icon:'✅',title:'No Overdue Deliverables',
+        action:'Continue monitoring due dates daily. As more tasks approach their deadlines, proactive check-ins with owners will help prevent new overdue items from appearing.',
+        body:'<strong>All tasks are either completed or still within their deadlines</strong> — this is a strong indicator of effective planning and owner accountability.<br><br>This is worth highlighting in your next stakeholder update. Teams that consistently avoid overdue items tend to have better on-time delivery rates and fewer escalations. The key to maintaining this is regular status updates and early flag-raising when blockers appear.'});
+    }
+
+    // 3. Due Soon
+    if(dueSoon.length>0){
+      insights.push({type:'warn',icon:'⏰',title:dueSoon.length+' Item'+(dueSoon.length>1?'s':'')+' Due in the Next 14 Days',
+        action:'Do a quick check-in with each owner today. Ask: Is this on track? Any blockers? Do you need support? A 5-minute conversation now prevents a missed deadline later.',
+        body:'These tasks are within the 2-week danger zone — close enough that delays would immediately become overdue with little time to recover:<ul>'+dueSoon.map(t=>'<li><strong>'+t.name+'</strong> — due <strong>'+fd(pd(t.due))+'</strong> · Owner: '+(t.to||'?')+' · Status: '+t.status+'</li>').join('')+'</ul><br><strong>Why this is flagged:</strong> Research in project management consistently shows that most missed deadlines are predictable 1–2 weeks in advance. Early intervention at this stage has the highest success rate for keeping items on track.'});
+    }
+
+    // 4. Due date timeline analysis — deadline density & workstream risk
+    {
+      // Group all incomplete tasks by month of due date
+      const byMonth = {};
+      all.filter(t=>t.due&&t.status!=='🟢').forEach(t=>{
+        const d=pd(t.due);
+        if(!d) return;
+        const key=d.toLocaleDateString('en-US',{month:'short',year:'numeric'});
+        if(!byMonth[key]) byMonth[key]={tasks:[],month:d};
+        byMonth[key].tasks.push(t);
+      });
+      const sortedMonths=Object.values(byMonth).sort((a,b)=>a.month-b.month);
+
+      // Which workstreams have the most pressure in the next 30 days?
+      const next30=all.filter(t=>{const d=pd(t.due);return d&&d>=TODAY&&(d-TODAY)/86400000<=30&&t.status!=='🟢';});
+      const wsPressure={};
+      next30.forEach(t=>{
+        const cat=CATS.find(c=>c.tasks.includes(t));
+        if(!cat) return;
+        if(!wsPressure[cat.name]) wsPressure[cat.name]={count:0,color:cat.color,tasks:[]};
+        wsPressure[cat.name].count++;
+        wsPressure[cat.name].tasks.push(t);
+      });
+      const pressureList=Object.entries(wsPressure).sort((a,b)=>b[1].count-a[1].count);
+
+      // Days overdue severity
+      const overdueWithDays=overdue.map(t=>{
+        const d=pd(t.due);
+        const days=d?Math.round((TODAY-d)/86400000):0;
+        return {...t, daysOverdue:days};
+      }).sort((a,b)=>b.daysOverdue-a.daysOverdue);
+      const criticalOverdue=overdueWithDays.filter(t=>t.daysOverdue>=14);
+      const mildOverdue=overdueWithDays.filter(t=>t.daysOverdue>0&&t.daysOverdue<14);
+
+      const timelineBody = sortedMonths.length===0
+        ? 'All remaining tasks either have no due date or are already complete.'
+        : '<strong>Upcoming deadline distribution</strong> (incomplete tasks by month):<ul style="margin-top:6px;">'+
+          sortedMonths.slice(0,6).map(m=>{
+            const overdueTasks=m.tasks.filter(t=>m.month<TODAY);
+            const label=m.month<TODAY?'<span style="color:#c0392b;font-size:.68rem;font-weight:700;"> ⚠ PAST DUE</span>':'';
+            return '<li><strong>'+m.month.toLocaleDateString('en-US',{month:'long',year:'numeric'})+'</strong>'+label+' — '+m.tasks.length+' task'+(m.tasks.length>1?'s':'')+': '+m.tasks.slice(0,3).map(t=>'<em>'+t.name+'</em>').join(', ')+(m.tasks.length>3?' +more':'')+' </li>';
+          }).join('')+'</ul>'
+          +(pressureList.length>0?'<br><strong>Workstream deadline pressure (next 30 days):</strong><ul>'+pressureList.map(([name,data])=>'<li><strong style="color:'+data.color+'">'+name+'</strong> — '+data.count+' task'+(data.count>1?'s':'')+' due: '+data.tasks.slice(0,2).map(t=>'<em>'+t.name+'</em> ('+fd(pd(t.due))+')').join(', ')+(data.tasks.length>2?' +more':'')+'</li>').join('')+'</ul>':'')
+          +(criticalOverdue.length>0?'<br><span style="color:#c0392b;font-weight:600;">🔴 Critically overdue (14+ days):</span><ul>'+criticalOverdue.slice(0,4).map(t=>'<li><strong>'+t.name+'</strong> — <strong>'+t.daysOverdue+' days overdue</strong> · Owner: '+(t.to||'Unassigned')+'</li>').join('')+'</ul>':'')
+          +(mildOverdue.length>0&&criticalOverdue.length===0?'<br><span style="color:#d35400;font-weight:600;">🟠 Recently overdue (under 14 days):</span><ul>'+mildOverdue.map(t=>'<li><strong>'+t.name+'</strong> — '+t.daysOverdue+' day'+(t.daysOverdue!==1?'s':'')+' overdue · Owner: '+(t.to||'Unassigned')+'</li>').join('')+'</ul>':'');
+
+      const timelineType = criticalOverdue.length>2?'danger':pressureList.length>3||criticalOverdue.length>0?'warn':'info';
+      insights.push({type:timelineType,icon:'📆',title:'Due Date & Deadline Analysis',
+        action:'Review the deadline distribution with your team. Focus immediate attention on critically overdue items first, then prepare for the highest-pressure upcoming month.',
+        body:'<strong>Why due dates are analysed separately from status:</strong> Status fields reflect what owners self-report, but due dates are objective. Analysing deadlines independently reveals deadline clustering (too many things due at once), overdue severity (how long past due), and which workstreams face the most near-term pressure.<br><br>'+timelineBody});
+    }
+
+    // 5. Best workstream
+    insights.push({type:'good',icon:'🏆',title:'Best Performing Workstream: '+bestCat.name,
+      action:'In your next team meeting, ask the '+bestCat.name+' lead to briefly share what\'s working — their process, cadence, or communication style may be replicable across other workstreams.',
+      body:'<strong>'+bestCat.name+'</strong> leads the project with <strong>'+bestCat.pct+'%</strong> of tasks completed ('+bestCat.done+' out of '+bestCat.total+').<br><br><strong>Why this is important:</strong> Identifying your strongest workstream isn\'t just recognition — it\'s a diagnostic tool. High-performing workstreams typically share common traits: clear ownership, well-defined Definitions of Done, regular check-ins, and early escalation of blockers. Understanding what\'s driving their success can directly improve the performance of lagging workstreams.'});
+
+    // 5. Worst workstream
+    if(worstCat.name!==bestCat.name){
+      const riskReason = worstCat.ov>0
+        ? 'The presence of <strong>'+worstCat.ov+' overdue item'+(worstCat.ov>1?'s':'')+'</strong> makes this Critical — overdue items block progress and signal a breakdown in planning or accountability.'
+        : worstCat.risk>0
+          ? '<strong>'+worstCat.risk+' delayed task'+(worstCat.risk>1?'s':'')+'</strong> indicate active problems that are already known but not resolved.'
+          : '<strong>'+worstCat.ns+' task'+(worstCat.ns>1?'s':'')+' not yet started</strong> suggests this workstream hasn\'t been mobilized fully yet.';
+      insights.push({type:worstCat.ov>0?'danger':'warn',icon:'⚠️',title:'Workstream Needing Attention: '+worstCat.name,
+        action:'Schedule a dedicated 30-minute review with the '+worstCat.name+' workstream lead. Come prepared with the list of overdue and not-started tasks. Identify root cause: is it resourcing, dependencies, clarity of scope, or competing priorities?',
+        body:'<strong>'+worstCat.name+'</strong> has the lowest completion rate at <strong>'+worstCat.pct+'%</strong> ('+worstCat.done+' of '+worstCat.total+' tasks done).<br><br><strong>Why this is flagged:</strong> '+riskReason+'<br><br>Lagging workstreams often create bottlenecks for other teams — especially when they own dependencies that other tasks are waiting on. Early intervention is significantly more effective than late escalation.'});
+    }
+
+    // 6. Missing DoD
+    if(noDod.length>0){
+      insights.push({type:'warn',icon:'📋',title:noDod.length+' Task'+(noDod.length>1?'s':'')+' Missing Definition of Done',
+        action:'Use the 💬 Notes panel on each task to add a clear, measurable DoD. A good DoD answers: "How will we know when this is truly finished, and who needs to sign off?"',
+        body:'<strong>'+noDod.length+' task'+(noDod.length>1?'s do':' does')+' not have a Definition of Done</strong> — meaning there is no agreed standard for what "complete" looks like for these items.<br><br><strong>Why this is a risk:</strong> Without a DoD, tasks are vulnerable to scope creep (work expanding beyond what was planned), premature closure (marking complete before true completion), and disagreements between stakeholders on whether something is actually finished. In a Fridays-Booth transition context, unclear DoDs are especially risky because both parties may have different expectations of what "done" means.<br><br><strong>Tasks missing DoD:</strong><ul>'+noDod.slice(0,5).map(t=>'<li><strong>'+t.name+'</strong></li>').join('')+(noDod.length>5?'<li style="color:var(--muted)">…and '+(noDod.length-5)+' more</li>':'')+'</ul>'});
+    }
+
+    // 7. Missing due dates
+    if(noDate.length>0){
+      insights.push({type:'info',icon:'📅',title:noDate.length+' Task'+(noDate.length>1?'s':'')+' Without Due Dates',
+        action:'Set target due dates even if they are estimates. A date can always be revised — having no date at all makes it invisible to the timeline, overdue detection, and the Smart Analytics engine.',
+        body:'<strong>'+noDate.length+' task'+(noDate.length>1?'s have':' has')+' no due date set</strong>, making them invisible on the Gantt timeline and excluded from all deadline tracking.<br><br><strong>Why this matters:</strong> Tasks without due dates tend to drift indefinitely. They cannot be flagged as overdue, they don\'t show up in the 2-week alert, and they create false comfort — the project looks healthier than it is because these items aren\'t counted against any deadline.<br><br><strong>Tasks without dates:</strong><ul>'+noDate.slice(0,5).map(t=>'<li><strong>'+t.name+'</strong> ('+( CATS.find(c=>c.tasks.includes(t))||{name:'unknown'}).name+')</li>').join('')+(noDate.length>5?'<li style="color:var(--muted)">…and '+(noDate.length-5)+' more</li>':'')+'</ul>'});
+    }
+
+    // 8. Unowned tasks
+    if(noOwner.length>0){
+      insights.push({type:'warn',icon:'👤',title:noOwner.length+' Task'+(noOwner.length>1?'s':'')+' With No Owner Assigned',
+        action:'Assign both a Current owner (who is responsible now) and a To Be owner (who will own this post-transition). Make ownership visible in the next team review.',
+        body:'<strong>'+noOwner.length+' task'+(noOwner.length>1?'s have':' has')+' no owner</strong> in either the Current or To Be columns.<br><br><strong>Why this is a risk:</strong> In project management, unowned tasks are the single most reliable predictor of slippage. Without a named owner, there is no accountability, no one to escalate to, and no way to know who to contact when a deadline approaches. In a transition project like Fridays-Booth, ownership clarity is especially critical because responsibilities are actively shifting between organizations.<br><br><strong>Unowned tasks:</strong><ul>'+noOwner.slice(0,5).map(t=>'<li><strong>'+t.name+'</strong></li>').join('')+'</ul>'});
+    }
+
+    // 9. Action log
+    if(logHigh.length>0||logOverdue.length>0){
+      const logRisk = logHigh.length>3
+        ? 'Having '+logHigh.length+' high-priority open items indicates that the action log is under-resourced or that items are not being closed fast enough. High-priority items that remain open for extended periods lose urgency and often get deprioritized.'
+        : 'These items are flagged as high priority and should be the first thing reviewed in every team standup until they are resolved.';
+      insights.push({type:'danger',icon:'🔥',title:'Action Log Needs Attention',
+        action:'Assign clear owners and hard deadlines to every high-priority open item in the next 24 hours. If an item cannot be completed, escalate it rather than leaving it open indefinitely.',
+        body:(logHigh.length>0?'<strong>'+logHigh.length+' high-priority action item'+(logHigh.length>1?'s are':' is')+' still open.</strong><br>':'')+
+             (logOverdue.length>0?'<strong>'+logOverdue.length+' action item'+(logOverdue.length>1?'s have':' has')+' passed their due date.</strong><br>':'')+'<br>'+
+             '<strong>Why this is Critical:</strong> '+logRisk+'<br><br><strong>Items requiring immediate attention:</strong><ul>'+
+             [...new Set([...logHigh,...logOverdue])].slice(0,5).map(l=>'<li><strong>'+l.action+'</strong> — Status: '+l.status+' · Due: '+fd(pd(l.due))+'<br><span style="color:var(--muted);font-size:.68rem;">Workstream: '+l.ws+' · Priority: '+l.priority+'</span></li>').join('')+'</ul>'});
+    } else {
+      insights.push({type:'good',icon:'✅',title:'Action Log is Healthy',
+        action:'Review the Action Log weekly to prevent new high-priority items from accumulating. A healthy log is one that\'s actively maintained, not just populated.',
+        body:'<strong>No high-priority overdue actions</strong> — the Action Log is in a healthy state with '+LOG.filter(l=>l.status==='Completed').length+' item'+(LOG.filter(l=>l.status==='Completed').length!==1?'s':'')+' completed so far.<br><br><strong>What this means:</strong> A well-maintained action log is a key signal of operational maturity. It shows that the team is tracking commitments, following through, and closing items. Keep this discipline as the project moves into more complex phases — action items tend to accumulate faster during change management and transition periods.'});
+    }
+
+    // 10. Unowned log items
+    if(logNoOwner.length>0){
+      insights.push({type:'warn',icon:'📌',title:logNoOwner.length+' Action Item'+(logNoOwner.length>1?'s':'')+' Without an Owner',
+        action:'Go through the Action Log and assign a Fridays Owner and Booth Owner to every open item. Even if only one side is responsible, both should be named for transparency.',
+        body:'<strong>'+logNoOwner.length+' action item'+(logNoOwner.length>1?'s have':' has')+' no owner assigned</strong> in the Fridays or Booth owner columns.<br><br><strong>Why this matters:</strong> In a two-party transition like Fridays-Booth, every action item should have accountability on both sides — one party to execute, and one party to verify. Items without any owner have no accountability chain, making them invisible in escalation paths and likely to be forgotten as the project progresses.<br><br><ul>'+logNoOwner.slice(0,4).map(l=>'<li><strong>'+l.action+'</strong><br><span style="color:var(--muted);font-size:.68rem;">Workstream: '+l.ws+'</span></li>').join('')+'</ul>'});
+    }
+
+    // 11. FTE
+    if(peakOverall>0){
+      const billablePeak=Math.max(...FTE_ROWS.map(r=>parseFloat(r.vals[0])||0));
+      insights.push({type:'info',icon:'👥',title:'FTE Forecast — Peak '+peakOverall+' HC in '+maxMonth,
+        action:'Confirm with Operations and WFM that scheduling, seat allocation, and support ratios are prepared for peak volume. Validate Wave 5 & 6 hold status and update the forecast if they are confirmed.',
+        body:'The FTE forecast projects a peak of <strong>'+peakOverall+' overall HC</strong> in <strong>'+maxMonth+'</strong>, with <strong>'+billablePeak+' billable HC</strong> at peak.<br><br><strong>Why this needs planning now:</strong> Headcount ramp-ups of this scale require advance preparation across multiple functions. Training must be completed before agents go live. QA needs to scale its audit capacity proportionally. WFM must ensure scheduling coverage matches actual availability, not just headcount. Seat and infrastructure planning must be confirmed with Office Space workstream leads for each site (CEB, MNL, CO).<br><br><strong>Note:</strong> Wave 5 and Wave 6 (currently on HOLD) are <em>not</em> included in these projections. If either is confirmed, peak FTE will be significantly higher and all downstream capacity plans will need to be revised.'});
+    }
+
+    // 12. Suggested gaps
+    const suggestions=[];
+    catBreakdown.forEach(cat=>{
+      if(cat.ns>0&&cat.done===0) suggestions.push('<li><strong>'+cat.name+':</strong> No tasks have been completed yet in this workstream. Consider scheduling a kickoff session to align on priorities, clarify ownership, and unblock any items that are stalled before they start.</li>');
+    });
+    if(!LOG.some(l=>l.ws&&l.ws.toLowerCase().includes('calibration'))) suggestions.push('<li><strong>QA Calibration session:</strong> No calibration session is currently tracked in the Action Log. Regular calibrations are standard practice in QA operations and should be scheduled as a recurring cadence before the QA function transitions fully to Booth ownership.</li>');
+    if(!LOG.some(l=>l.action&&l.action.toLowerCase().includes('coaching'))) suggestions.push('<li><strong>Performance coaching plan:</strong> No coaching-related action item was found. A documented coaching framework is typically expected as part of Performance Management handover, including criteria, frequency, and accountability.</li>');
+    if(!LOG.some(l=>l.action&&l.action.toLowerCase().includes('report'))) suggestions.push('<li><strong>Reporting cadence:</strong> No reporting action item was found. Consider adding a weekly and monthly reporting cadence item to Governance to ensure both parties have consistent visibility into performance.</li>');
+    if(!LOG.some(l=>l.action&&l.action.toLowerCase().includes('onboard'))) suggestions.push('<li><strong>Onboarding checklist:</strong> No agent or QA onboarding action was found. A formal onboarding checklist reduces time-to-productivity for new hires and is especially critical during ramp-up phases.</li>');
+    if(suggestions.length>0){
+      insights.push({type:'info',icon:'💡',title:'Suggested Missing Actions ('+suggestions.length+')',
+        action:'Review each suggestion with your team leads. Add the relevant items to the Action Log with owners and due dates if they are applicable to your current scope.',
+        body:'Based on a cross-analysis of your Gantt chart, Action Log, and FTE Forecast, the following items appear to be missing from your current plan. These are commonly required in BPO transition and operational handover projects of this type:<ul>'+suggestions.join('')+'</ul>'});
+    }
+
+    // 13. PM Recommendation
+    const rec = totalRisk===0
+      ? {type:'good',
+         msg:'<strong>The project is in a healthy state.</strong> All key indicators are green: no overdue items, action log is maintained, and workstreams are progressing. The priority now is sustaining this momentum through the remaining phases of the transition.<br><br>Key focus areas going forward: (1) Ensure Wave 3 and 4 hiring ramp executes on schedule. (2) Maintain QA calibration cadence ahead of the TS-to-MS cut-over. (3) Confirm Wave 5 & 6 hold status with Fridays leadership before any capacity planning changes are made.',
+         action:'Share a brief green-status update with Fridays and Booth leadership. Celebrate progress and reinforce accountability for the remaining deliverables.'}
+      : totalRisk<=3
+        ? {type:'warn',
+           msg:'<strong>The project has a few items that need attention, but is generally on track.</strong> '+totalRisk+' risk item'+(totalRisk>1?'s are':' is')+' currently flagged. While this is manageable, these items should be addressed in the next 5 business days to prevent them from escalating.<br><br>Most common cause at this stage: task owners are handling competing priorities and haven\'t had a formal check-in this week. A 30-minute focused review call typically resolves 80% of these items.',
+           action:'Send a brief "at-risk items" summary to workstream leads today. Request a status update on each flagged item by end of this week. Escalate any that remain unresolved to leadership.'}
+        : {type:'danger',
+           msg:'<strong>The project has multiple critical risk items and requires immediate leadership attention.</strong> '+totalRisk+' items are currently flagged as overdue, delayed, or past-due in the action log — a level that indicates systemic issues rather than isolated slippage.<br><br>At this volume, individual item follow-up is not sufficient. A structured recovery action is needed: (1) Convene an urgent project review with all workstream leads. (2) Re-baseline timelines where recovery is not feasible. (3) Identify and remove blockers at a leadership level. (4) Increase check-in frequency to daily standups until risk count drops below 3.',
+           action:'Escalate to project sponsors. Convene an emergency project review within 48 hours. Come prepared with a prioritized risk register and proposed recovery plan.'};
+    insights.push({type:rec.type,icon:'🎯',title:'PM Recommendation',action:rec.action,body:rec.msg});
+
+    // ── RENDER
+    const sidebar=insights.map((ins,i)=>`
+      <div class="priority-item ${i===0?'active':''} p-${ins.type}" onclick="selectInsight(${i})" id="pi-${i}">
+        <div class="priority-dot ${ins.type}"></div>
+        <div>
+          <div class="priority-text">${ins.icon} ${ins.title}</div>
+          <span class="priority-badge ${ins.type}">${ins.type==='danger'?'Critical':ins.type==='warn'?'Attention':ins.type==='good'?'Healthy':'Info'}</span>
+        </div>
+      </div>`).join('');
+
+    const details=insights.map((ins,i)=>`
+      <div class="insight-detail-card ${i===0?'active':''}" id="id-${i}">
+        <div class="insight-detail-header">
+          <div class="insight-detail-icon">${ins.icon}</div>
+          <div class="insight-detail-meta">
+            <div class="insight-detail-title">${ins.title}</div>
+            <span class="insight-detail-type ${ins.type}">${ins.type==='danger'?'Critical':ins.type==='warn'?'Needs Attention':ins.type==='good'?'Healthy':'Informational'}</span>
+          </div>
+        </div>
+        <div class="insight-detail-body">${ins.body}</div>
+        ${ins.action?`<div class="insight-action-box"><div class="insight-action-label">💡 Recommended Action</div><div class="insight-action-text">${ins.action}</div></div>`:''}
+      </div>`).join('');
+
+    out.innerHTML=`
+      <div class="analytics-body">
+        <div class="analytics-sidebar">
+          <div class="analytics-sidebar-title">Insights (${insights.length})</div>
+          ${sidebar}
+        </div>
+        <div class="analytics-detail">${details}
+          <p style="font-size:.62rem;color:var(--timberwolf);font-family:'Inter',sans-serif;margin-top:8px;text-align:center;">
+            ${total} deliverables · ${LOG.length} actions · ${FTE_ROWS.length} FTE months · Last run ${new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}
+          </p>
+        </div>
+      </div>`;
+  },600);
+}
+
+function selectInsight(i){
+  document.querySelectorAll('.priority-item').forEach((el,j)=>el.classList.toggle('active',j===i));
+  document.querySelectorAll('.insight-detail-card').forEach((el,j)=>el.classList.toggle('active',j===i));
+}
+
+
+// ─── INITIAL RENDER ───────────────────────────────────────────────────────────
+renderGantt(); renderLog(); renderProj(); renderFte();
+</script>
+
+<!-- Firebase via REST API — no external scripts needed -->
+<script>
+window.addEventListener('load', function() {
+
+  const FB_URL = 'https://fridays-booth-default-rtdb.asia-southeast1.firebasedatabase.app/gantt_data';
+  const DATA_VERSION = 8; // bump this when default data changes
+
+  let _pendingSave     = null;
+  let _suppressListener = false;
+  let _lastSavedAt     = 0;
+  let _pollInterval    = null;
+
+  // ── SAVE via REST PUT
+  window.saveToFirebase = function() {
+    if (_pendingSave) clearTimeout(_pendingSave);
+    _pendingSave = setTimeout(() => {
+      _suppressListener = true;
+      const payload = JSON.stringify({
+        cats:      JSON.parse(JSON.stringify(CATS)),
+        log:       JSON.parse(JSON.stringify(LOG)),
+        projRows:  JSON.parse(JSON.stringify(PROJ_ROWS)),
+        projDates: JSON.parse(JSON.stringify(PROJ_DATES)),
+        fteRows:   JSON.parse(JSON.stringify(FTE_ROWS)),
+        fteCols:   JSON.parse(JSON.stringify(FTE_COLS)),
+        fteRows2:  JSON.parse(JSON.stringify(FTE_ROWS2)),
+        fteCols2:  JSON.parse(JSON.stringify(FTE_COLS2)),
+        dataVersion: DATA_VERSION,
+        savedAt:   Date.now()
+      });
+      fetch(FB_URL + '.json', { method: 'PUT', body: payload })
+        .then(r => r.json())
+        .then(data => {
+          _lastSavedAt = data.savedAt || Date.now();
+          setTimeout(() => { _suppressListener = false; }, 1500);
+          const b = document.getElementById('saveBanner');
+          b.textContent = '✓ Saved & synced';
+          b.style.background = 'var(--lake)';
+          b.classList.add('show');
+          clearTimeout(window._syncSt);
+          window._syncSt = setTimeout(() => b.classList.remove('show'), 2000);
+        })
+        .catch(err => {
+          _suppressListener = false;
+          console.warn('Save failed:', err);
+        });
+    }, 800);
+  };
+
+  // ── POLL for changes every 3 seconds
+  function pollFirebase() {
+    if (_suppressListener) return;
+    fetch(FB_URL + '.json')
+      .then(r => r.json())
+      .then(data => {
+        if (!data) { window.saveToFirebase(); return; }
+
+        // Only update if someone else saved more recently
+        if (data.savedAt && data.savedAt <= _lastSavedAt) return;
+        if (data.savedAt) _lastSavedAt = data.savedAt;
+
+        // Don't disrupt active editing
+        if (_notesCi !== null) return;
+        if (document.activeElement && ['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) return;
+
+        if (data.cats)      { CATS.length=0;      data.cats.forEach(c => CATS.push(c)); }
+        if (data.log)       { LOG.length=0;        data.log.forEach(l => LOG.push(l)); }
+        if (data.projRows)  { PROJ_ROWS.length=0;  data.projRows.forEach(r => PROJ_ROWS.push(r)); }
+        if (data.projDates) { PROJ_DATES.length=0; data.projDates.forEach(d => PROJ_DATES.push(d)); }
+        if (data.fteRows)   { FTE_ROWS.length=0;   data.fteRows.forEach(r => FTE_ROWS.push(r)); }
+        if (data.fteCols)   { FTE_COLS.length=0;   data.fteCols.forEach(c => FTE_COLS.push(c)); }
+        if (data.fteRows2)  { FTE_ROWS2.length=0;  data.fteRows2.forEach(r => FTE_ROWS2.push(r)); }
+        if (data.fteCols2)  { FTE_COLS2.length=0;  data.fteCols2.forEach(c => FTE_COLS2.push(c)); }
+
+        renderGantt(); renderLog(); renderProj(); renderFte();
+
+        const b = document.getElementById('saveBanner');
+        b.textContent = '🔄 Updated by teammate';
+        b.style.background = '#5B8B92';
+        b.classList.add('show');
+        clearTimeout(window._syncSt);
+        window._syncSt = setTimeout(() => b.classList.remove('show'), 2500);
+      })
+      .catch(() => {
+        const b = document.getElementById('saveBanner');
+        b.textContent = '⚠ Reconnecting…';
+        b.style.background = '#d35400';
+        b.classList.add('show');
+      });
+  }
+
+  // Initial load from Firebase
+  fetch(FB_URL + '.json')
+    .then(r => r.json())
+    .then(data => {
+      if (!data || (data.dataVersion && data.dataVersion < DATA_VERSION) || !data.dataVersion) {
+        // No data or old version — push new defaults up
+        console.log('Initialising Firebase with latest data (version', DATA_VERSION, ')');
+        window.saveToFirebase();
+      } else {
+        _lastSavedAt = data.savedAt || 0;
+        if (data.cats)      { CATS.length=0;      data.cats.forEach(c => CATS.push(c)); }
+        if (data.log)       { LOG.length=0;        data.log.forEach(l => LOG.push(l)); }
+        if (data.projRows)  { PROJ_ROWS.length=0;  data.projRows.forEach(r => PROJ_ROWS.push(r)); }
+        if (data.projDates) { PROJ_DATES.length=0; data.projDates.forEach(d => PROJ_DATES.push(d)); }
+        if (data.fteRows)   { FTE_ROWS.length=0;   data.fteRows.forEach(r => FTE_ROWS.push(r)); }
+        if (data.fteCols)   { FTE_COLS.length=0;   data.fteCols.forEach(c => FTE_COLS.push(c)); }
+        if (data.fteRows2)  { FTE_ROWS2.length=0;  data.fteRows2.forEach(r => FTE_ROWS2.push(r)); }
+        if (data.fteCols2)  { FTE_COLS2.length=0;  data.fteCols2.forEach(c => FTE_COLS2.push(c)); }
+        renderGantt(); renderLog(); renderProj(); renderFte();
+      }
+      const b = document.getElementById('saveBanner');
+      b.textContent = '🟢 Connected';
+      b.style.background = 'var(--lake)';
+      b.classList.add('show');
+      clearTimeout(window._syncSt);
+      window._syncSt = setTimeout(() => b.classList.remove('show'), 2000);
+
+      // Start polling every 3 seconds for teammate updates
+      _pollInterval = setInterval(pollFirebase, 3000);
+    })
+    .catch(err => {
+      console.warn('Firebase REST unavailable — running offline:', err);
+    });
+
+});
+</script>
+</body>
+</html>
